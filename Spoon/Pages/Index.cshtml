@@ -1,0 +1,24 @@
+﻿@page
+@model Spoon.Pages.IndexModel
+<ul>
+@foreach (var f in Model.feeds) {
+   <li>
+      <p>
+         @f.title
+         <br>
+         @f.desc
+         <br>
+         @f.link
+      </p>
+      @foreach (var item in f.items) {
+      <p>
+         <a href="@item.link">
+         @item.title
+         </a>
+         <br>
+         @item.desc
+      </p>
+      }
+   </li>
+}
+</ul>
