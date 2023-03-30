@@ -5,6 +5,6 @@ public class Feed {
    public List<Item> items = new();
 }
 public class Item {
-   public str title, desc, link;
+   public str title, desc, link, content;
    public dte pub;
 }

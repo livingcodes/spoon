@@ -1,24 +1,21 @@
 ﻿@page
 @model Spoon.Pages.IndexModel
-<ul>
 @foreach (var f in Model.feeds) {
-   <li>
-      <p>
-         @f.title
-         <br>
-         @f.desc
-         <br>
-         @f.link
-      </p>
-      @foreach (var item in f.items) {
-      <p>
-         <a href="@item.link">
-         @item.title
-         </a>
-         <br>
-         @item.desc
-      </p>
-      }
-   </li>
+<div>
+   <h1>@f.title</h1>
+   <p>@f.desc</p>
+   <p>@f.link</p>
+   <ol>
+   @foreach (var item in f.items) {
+      <li>
+         <h2>
+            <a href="@item.link">@item.title</a>
+         </h2>
+         <p>@item.pub.ToString("yyyy-MM-dd hh:mmtt").ToLower()</p>
+         <p>@item.desc</p>
+         @Html.Raw(item.content)
+      </li>
+   }
+   </ol>
+</div>
 }
-</ul>

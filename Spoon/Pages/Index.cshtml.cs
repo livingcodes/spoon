@@ -1,12 +1,17 @@
-
-using Microsoft.AspNetCore.Mvc.RazorPages;
-
 namespace Spoon.Pages;
+   using Microsoft.AspNetCore.Mvc.RazorPages;
 public class IndexModel : PageModel
 {
-    public List<Feed> feeds;
-    public void OnGet() {
-        var rdr = new Reader();
-        feeds = rdr.Read();
-    }
+   public List<Feed> feeds = new();
+   public void OnGet() {
+      var filePaths = new List<str>();
+      var filePath = @"c:\code\spoon\Spoon\jeremydmiller.xml";
+      filePaths.Add(filePath);
+
+      foreach (var path in filePaths) {
+         IFeedReader rdr = new FileFeedReader(filePath);
+         var feed = rdr.Read();
+         feeds.Add(feed);
+      }
+   }
 }

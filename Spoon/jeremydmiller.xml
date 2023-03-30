@@ -1,0 +1,2243 @@
+<?xml version="1.0" encoding="UTF-8"?><rss version="2.0"
+	xmlns:content="http://purl.org/rss/1.0/modules/content/"
+	xmlns:wfw="http://wellformedweb.org/CommentAPI/"
+	xmlns:dc="http://purl.org/dc/elements/1.1/"
+	xmlns:atom="http://www.w3.org/2005/Atom"
+	xmlns:sy="http://purl.org/rss/1.0/modules/syndication/"
+	xmlns:slash="http://purl.org/rss/1.0/modules/slash/"
+	xmlns:georss="http://www.georss.org/georss" xmlns:geo="http://www.w3.org/2003/01/geo/wgs84_pos#" xmlns:media="http://search.yahoo.com/mrss/"
+	>
+
+<channel>
+	<title>The Shade Tree Developer</title>
+	<atom:link href="https://jeremydmiller.com/feed/" rel="self" type="application/rss+xml" />
+	<link>https://jeremydmiller.com</link>
+	<description>Still having fun writing code</description>
+	<lastBuildDate>Wed, 29 Mar 2023 14:44:13 +0000</lastBuildDate>
+	<language>en</language>
+	<sy:updatePeriod>
+	hourly	</sy:updatePeriod>
+	<sy:updateFrequency>
+	1	</sy:updateFrequency>
+	<generator>http://wordpress.com/</generator>
+<cloud domain='jeremydmiller.com' port='80' path='/?rsscloud=notify' registerProcedure='' protocol='http-post' />
+<image>
+		<url>https://secure.gravatar.com/blavatar/a465f67f284d83df316716bd321eedca?s=96&#038;d=https%3A%2F%2Fs0.wp.com%2Fi%2Fbuttonw-com.png</url>
+		<title>The Shade Tree Developer</title>
+		<link>https://jeremydmiller.com</link>
+	</image>
+	<atom:link rel="search" type="application/opensearchdescription+xml" href="https://jeremydmiller.com/osd.xml" title="The Shade Tree Developer" />
+	<atom:link rel='hub' href='https://jeremydmiller.com/?pushpress=hub'/>
+	<item>
+		<title>Observability in Wolverine</title>
+		<link>https://jeremydmiller.com/2023/03/29/observability-in-wolverine/</link>
+					<comments>https://jeremydmiller.com/2023/03/29/observability-in-wolverine/#respond</comments>
+		
+		<dc:creator><![CDATA[jeremydmiller]]></dc:creator>
+		<pubDate>Wed, 29 Mar 2023 14:44:13 +0000</pubDate>
+				<category><![CDATA[Wolverine]]></category>
+		<guid isPermaLink="false">http://jeremydmiller.com/?p=10613</guid>
+
+					<description><![CDATA[Some colleagues and I are working on the technical modernization of a large system at work, and lately we&#8217;ve been talking quite a bit about the observability we want baked into the system going forward. To share a little bit of context about this particular system, it&#8217;s&#8230; And of course, we&#8217;re also dogfooding Wolverine as &#8230; <a href="https://jeremydmiller.com/2023/03/29/observability-in-wolverine/" class="more-link">Continue reading <span class="screen-reader-text">Observability in Wolverine</span> <span class="meta-nav">&#8594;</span></a>]]></description>
+										<content:encoded><![CDATA[
+<figure class="wp-block-image size-large"><a href="https://jeremydmiller.files.wordpress.com/2022/12/wolverine_banner.png"><img data-attachment-id="10293" data-permalink="https://jeremydmiller.com/2022/12/28/my-oss-plans-for-2023/wolverine_banner/" data-orig-file="https://jeremydmiller.files.wordpress.com/2022/12/wolverine_banner.png" data-orig-size="1072,482" data-comments-opened="1" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;}" data-image-title="wolverine_banner" data-image-description="" data-image-caption="" data-medium-file="https://jeremydmiller.files.wordpress.com/2022/12/wolverine_banner.png?w=300" data-large-file="https://jeremydmiller.files.wordpress.com/2022/12/wolverine_banner.png?w=1024" src="https://jeremydmiller.files.wordpress.com/2022/12/wolverine_banner.png?w=1024" alt="" class="wp-image-10293" srcset="https://jeremydmiller.files.wordpress.com/2022/12/wolverine_banner.png?w=1024 1024w, https://jeremydmiller.files.wordpress.com/2022/12/wolverine_banner.png?w=150 150w, https://jeremydmiller.files.wordpress.com/2022/12/wolverine_banner.png?w=300 300w, https://jeremydmiller.files.wordpress.com/2022/12/wolverine_banner.png?w=768 768w, https://jeremydmiller.files.wordpress.com/2022/12/wolverine_banner.png 1072w" sizes="(max-width: 1024px) 100vw, 1024px" /></a></figure>
+
+
+
+<p>Some colleagues and I are working on the technical modernization of a large system at work, and lately we&#8217;ve been talking quite a bit about the observability we want baked into the system going forward. To share a little bit of context about this particular system, it&#8217;s&#8230;</p>
+
+
+
+<ul>
+<li>Very distributed, with asynchronous messaging between a dozen or so services plus calls to another half dozen external web services</li>
+
+
+
+<li>It&#8217;s multi-tenanted</li>
+
+
+
+<li>Performance and throughput needs to be carefully monitored and we should absolutely be concerned with customer specific SLAs</li>
+</ul>
+
+
+
+<p>And of course, we&#8217;re also dogfooding <a href="http://wolverinefx.net">Wolverine</a> as our messaging framework and local mediator as part of our modernization work. One of my specific goals for the usability of Wolverine in grown up development usage is to provide all the necessary observability (error logging, activity logging, performance metrics) for production monitoring and troubleshooting. But also, bake that completely into Wolverine itself in such a way that developers don&#8217;t have to think too much about that and certainly don&#8217;t have to write very much repetitive boilerplate code in their daily work to get there. </p>
+
+
+
+<p>To start a conversation about what Wolverine can already do, check out this partial application bootstrapping code from a demonstrator project I wrote to test out Wolverine&#8217;s <a href="https://opentelemetry.io/">Open Telemetry</a> and metrics collection exports &#8212; in this case using <a href="https://www.honeycomb.io/">Honeycomb</a> to visualize and analyze the exported Open Telemetry data:</p>
+
+
+<div class="wp-block-syntaxhighlighter-code "><pre class="brush: csharp; title: ; notranslate">
+var host = Host.CreateDefaultBuilder(args)
+    .UseWolverine((context, opts) =&gt;
+    {
+        opts.ServiceName = &quot;Metrics&quot;;
+
+        // Open Telemetry *should* cover this anyway, but
+        // if you want Wolverine to log a message for *beginning*
+        // to execute a message, try this
+        opts.Policies.LogMessageStarting(LogLevel.Debug);
+        
+        // For both Open Telemetry span tracing and the &quot;log message starting...&quot;
+        // option above, add the AccountId as a tag for any command that implements
+        // the IAccountCommand interface
+        opts.Policies.Audit&lt;IAccountCommand&gt;(x =&gt; x.AccountId);
+        
+        // Setting up metrics and Open Telemetry activity tracing
+        // to Honeycomb
+        var honeycombOptions = context.Configuration.GetHoneycombOptions();
+        honeycombOptions.MetricsDataset = &quot;Wolverine:Metrics&quot;;
+        
+        opts.Services.AddOpenTelemetry()
+            // enable metrics
+            .WithMetrics(x =&gt;
+            {
+                // Export metrics to Honeycomb
+                x.AddHoneycomb(honeycombOptions);
+            })
+            
+            // enable Otel span tracing
+            .WithTracing(x =&gt;
+            {
+                x.AddHoneycomb(honeycombOptions);
+                x.AddSource(&quot;Wolverine&quot;);
+            });
+
+    })
+    .UseResourceSetupOnStartup()
+    .Build();
+
+await host.RunAsync();
+</pre></div>
+
+
+<p>I&#8217;ve opted into a few optional things up above to export the Wolverine open telemetry tracing and metrics to Honeycomb. I&#8217;ve also opted to have Wolverine inject extra logging messages into the generated message handlers to log <code>Debug</code> level messages denoting the start of message processing. </p>
+
+
+
+<p>Open Telemetry activities are automatically logged for all messages sent, received, and message execution. Significant events within Wolverine like message execution success, message failure exceptions, and messages moving to dead letter queues are logged through .NET&#8217;s standard <code>ILogger</code> abstraction with structured logging in mind. In all cases, if the log message is related to a specific message, the message&#8217;s correlation identifier that would point to Open Telemetry spans is written into the log message. In a future edition, Wolverine will make a larger investment in Open Telemetry and <a href="https://github.com/JasperFx/wolverine/issues/276">utilize Activity Events</a> in addition to old fashioned logging. </p>
+
+
+
+<h2 class="wp-block-heading">Wolverine Metrics</h2>
+
+
+
+<p>Wolverine is automatically tracking several performance related metrics through the <a href="https://learn.microsoft.com/en-us/dotnet/api/system.diagnostics.metrics?view=net-8.0">System.Diagnostics.Metrics</a> types, which sets Wolverine users up for being able to export their system&#8217;s performance metrics to third party observability tools like Honeycomb or Datadog that support Open Telemetry metrics. The current set of metrics in Wolverine are shown below:</p>
+
+
+
+<figure class="wp-block-table"><table><tbody><tr><td>Metric Name</td><td>Metric Type</td><td>Description</td></tr><tr><td>wolverine-messages-sent</td><td><a href="https://opentelemetry.io/docs/reference/specification/metrics/api/#counter">Counter</a></td><td>Number of messages sent</td></tr><tr><td>wolverine-execution-time</td><td><a href="https://opentelemetry.io/docs/reference/specification/metrics/api/#histogram">Histogram</a></td><td>Execution time in milliseconds</td></tr><tr><td>wolverine-messages-succeeded</td><td>Counter</td><td>Number of messages successfully processed</td></tr><tr><td>wolverine-dead-letter-queue</td><td>Counter</td><td>Number of messages moved to dead letter queues</td></tr><tr><td>wolverine-effective-time</td><td>Histogram</td><td>Effective time between a message being sent and being completely handled in milliseconds. Right now this works between Wolverine to Wolverine application sending and from NServiceBus applications sending to Wolverine applications through Wolverine&#8217;s NServiceBus interoperability.</td></tr><tr><td>wolverine-execution-failure</td><td>Counter</td><td>Number of message execution failures. Tagged by exception type</td></tr><tr><td>wolverine-inbox-count</td><td><a href="https://opentelemetry.io/docs/reference/specification/metrics/api/#asynchronous-gauge">Observable Gauge</a></td><td>Samples the number of pending envelopes in the durable inbox (likely to change)</td></tr><tr><td>wolverine-outbox-count</td><td>Observable Gauge</td><td>Samples the number of pending envelopes in the durable outbox (likely to change)</td></tr><tr><td>wolverine-scheduled-count</td><td>Observable Gauge</td><td>Samples the number of pending scheduled envelopes in the durable inbox (likely to change)</td></tr></tbody></table><figcaption class="wp-element-caption">Wolverine Metrics</figcaption></figure>
+
+
+
+<p>In all cases, the metrics are tagged by message type. In the case of messages sent, succeeded, or failed, Wolverine is also tagging the metrics by the message destination (Rabbit MQ / Azure Service Bus / AWS SQS queue etc.).</p>
+
+
+
+<p>In addition, you can add arbitrary tagging to the metrics. Taking an example inspired by something I know we&#8217;re going to want in my own company, let&#8217;s say that we want to tag the performance metrics by the business organization related to the message such that we could do a break down of system throughput and performance by organization.</p>
+
+
+
+<p>First off, let&#8217;s say that we have an interface type like this that we can use to let Wolverine know that a message is related to a particular business organization:</p>
+
+
+<div class="wp-block-syntaxhighlighter-code "><pre class="brush: csharp; title: ; notranslate">
+public interface IOrganizationRelated
+{
+    string OrganizationCode { get; }
+}
+</pre></div>
+
+
+<p>Next, I&#8217;ll write a simple <a href="https://wolverine.netlify.app/guide/handlers/middleware.html">Wolverine middleware</a> type to add a metrics tag to the metric data collection:</p>
+
+
+<div class="wp-block-syntaxhighlighter-code "><pre class="brush: csharp; title: ; notranslate">
+public static class OrganizationTaggingMiddleware
+{
+    public static void Before(IOrganizationRelated command, Envelope envelope)
+    {
+        envelope.SetMetricsTag("org.code", command.OrganizationCode);
+    }
+}
+</pre></div>
+
+
+<p>and finally add that middleware to our system against all handlers where the message type implements <code>IOrganizationRelated</code>:</p>
+
+
+<div class="wp-block-syntaxhighlighter-code "><pre class="brush: csharp; title: ; notranslate">
+        using var host = await Host.CreateDefaultBuilder()
+            .UseWolverine(opts =&gt;
+            {
+                // Add this middleware to all handlers where the message can be cast to
+                // IOrganizationRelated
+                opts.Policies.AddMiddlewareByMessageType(typeof(OrganizationTaggingMiddleware));
+            }).StartAsync();
+</pre></div>
+
+
+<p>To get Wolverine ready for a more formal, built in way to handle multi-tenancy, a recent version introduced formal <code>TenantId</code> tracking on Wolverine messages (this will be improved in Wolverine 0.9.16). The <code>TenantId</code> &#8212; if it exists &#8212; will also be tagged into the metrics (and Open Telemetry activity/span tracking) as &#8220;tenant.id&#8221;.</p>
+
+
+
+<p>Here&#8217;s a possible usage of this:</p>
+
+
+<div class="wp-block-syntaxhighlighter-code "><pre class="brush: csharp; title: ; notranslate">
+    public static async Task publish_operation(IMessageBus bus, string tenantId, string name)
+    {
+        // All outgoing messages or executed messages from this 
+        // IMessageBus object will be tagged with the tenant id
+        bus.TenantId = tenantId;
+        await bus.PublishAsync(new SomeMessage(name));
+    }
+</pre></div>
+
+
+<p>As of the forthcoming 0.9.16, the <code>TenantId</code> value will be automatically  propagated through any messages sent as a response to the original messages tagged with <code>TenantId</code> values. </p>
+
+
+
+<h2 class="wp-block-heading">Some More Thoughts on Open Telemetry</h2>
+
+
+
+<p>I&#8217;m personally wanting to make a big bet on <a href="https://opentelemetry.io/">Open Telemetry</a> tracing and monitoring going forward. As much as possible, I want us to use out of the box tools to integrate Open Telemetry tracking for performance monitoring for operations like outgoing web service calls (through integration with HttpClient) or Wolverine&#8217;s own tracking. </p>
+
+
+
+<p>Moreover, we currently have a great deal of repetitive code to support our robust logging strategy, and while having effectively instrumented code is certainly valuable, I find that the coding requirements detract from the readability of the code and often act as a deterrent against evolving the system. I&#8217;d like to get to the point where our developers spend very little time having to explicitly write instrumentation code within our systems and the actual functional code is easier to read and reason about by eliminating noise code.</p>
+
+
+
+<p></p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://jeremydmiller.com/2023/03/29/observability-in-wolverine/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+		
+		<media:content url="https://2.gravatar.com/avatar/83a17261fd4c9f537e63165df6ba57bb?s=96&#38;d=identicon&#38;r=G" medium="image">
+			<media:title type="html">jeremydmiller</media:title>
+		</media:content>
+
+		<media:content url="https://jeremydmiller.files.wordpress.com/2022/12/wolverine_banner.png?w=1024" medium="image" />
+	</item>
+		<item>
+		<title>Compound Handlers in Wolverine</title>
+		<link>https://jeremydmiller.com/2023/03/07/compound-handlers-in-wolverine/</link>
+					<comments>https://jeremydmiller.com/2023/03/07/compound-handlers-in-wolverine/#respond</comments>
+		
+		<dc:creator><![CDATA[jeremydmiller]]></dc:creator>
+		<pubDate>Wed, 08 Mar 2023 02:58:03 +0000</pubDate>
+				<category><![CDATA[Uncategorized]]></category>
+		<category><![CDATA[.Net]]></category>
+		<category><![CDATA[Marten]]></category>
+		<category><![CDATA[Wolverine]]></category>
+		<guid isPermaLink="false">http://jeremydmiller.com/?p=10598</guid>
+
+					<description><![CDATA[Last week I started a new series of blog posts about Wolverine capabilities with: Today I&#8217;m going to continue with a contrived example from the &#8220;payment ingestion service,&#8221; this time on what I&#8217;m so far calling &#8220;compound handlers&#8221; in Wolverine. When building a system with any amount of business logic or workflow logic, there&#8217;s some &#8230; <a href="https://jeremydmiller.com/2023/03/07/compound-handlers-in-wolverine/" class="more-link">Continue reading <span class="screen-reader-text">Compound Handlers in&#160;Wolverine</span> <span class="meta-nav">&#8594;</span></a>]]></description>
+										<content:encoded><![CDATA[
+<figure class="wp-block-image size-large"><a href="https://jeremydmiller.files.wordpress.com/2022/12/wolverine_banner.png"><img data-attachment-id="10293" data-permalink="https://jeremydmiller.com/2022/12/28/my-oss-plans-for-2023/wolverine_banner/" data-orig-file="https://jeremydmiller.files.wordpress.com/2022/12/wolverine_banner.png" data-orig-size="1072,482" data-comments-opened="1" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;}" data-image-title="wolverine_banner" data-image-description="" data-image-caption="" data-medium-file="https://jeremydmiller.files.wordpress.com/2022/12/wolverine_banner.png?w=300" data-large-file="https://jeremydmiller.files.wordpress.com/2022/12/wolverine_banner.png?w=1024" src="https://jeremydmiller.files.wordpress.com/2022/12/wolverine_banner.png?w=1024" alt="" class="wp-image-10293" srcset="https://jeremydmiller.files.wordpress.com/2022/12/wolverine_banner.png?w=1024 1024w, https://jeremydmiller.files.wordpress.com/2022/12/wolverine_banner.png?w=150 150w, https://jeremydmiller.files.wordpress.com/2022/12/wolverine_banner.png?w=300 300w, https://jeremydmiller.files.wordpress.com/2022/12/wolverine_banner.png?w=768 768w, https://jeremydmiller.files.wordpress.com/2022/12/wolverine_banner.png 1072w" sizes="(max-width: 1024px) 100vw, 1024px" /></a></figure>
+
+
+
+<p>Last week I started a new series of blog posts about Wolverine capabilities with:</p>
+
+
+
+<ul>
+<li><a href="https://jeremydmiller.com/2023/02/27/producer-consumer-pattern-with-wolverine/">Producer/Consumer Pattern with&nbsp;Wolverine</a></li>
+
+
+
+<li><a href="https://jeremydmiller.com/2023/02/28/resiliency-with-wolverine/">Resiliency with Wolverine</a></li>
+
+
+
+<li><a href="https://jeremydmiller.com/2023/03/01/useful-tricks-with-lamar-for-integration-testing/">Useful Tricks with Lamar for Integration Testing</a> (don&#8217;t laugh, it was relevant to a project at work ;-))</li>
+</ul>
+
+
+
+<p>Today I&#8217;m going to continue with a contrived example from the &#8220;payment ingestion service,&#8221; this time on what I&#8217;m so far calling &#8220;<a href="https://wolverine.netlify.app/guide/handlers/#compound-handlers">compound handlers</a>&#8221; in Wolverine. When building a system with any amount of business logic or workflow logic, there&#8217;s some philosophical choices that Wolverine is trying to make:</p>
+
+
+
+<ul>
+<li>To maximize testability, business or workflow logic &#8212; <strong>as much as possible</strong> &#8212; should be in <a href="https://en.wikipedia.org/wiki/Pure_function">pure functions</a> that are easily testable in isolated unit tests. In other words, you should be able to test this code without integration tests or mock objects. Just data in, and state-based assertions.</li>
+
+
+
+<li>Of course your message handler will absolutely need to read data from our database in the course of actually handling messages. It&#8217;ll also need to write data to the underlying database. Yet we still want to push toward the pure function approach for all logic. To get there, I like <a href="https://www.jamesshore.com/v2/projects/nullables/testing-without-mocks#a-frame-arch">Jim Shore&#8217;s A-Frame metaphor</a> for how code should be organized to isolate business logic away from infrastructure and into nicely testable code.</li>
+
+
+
+<li>I certainly didn&#8217;t set out this way years ago when what&#8217;s now Wolverine was first theorized, but Wolverine is trending toward using more functional decomposition with fewer abstractions rather than &#8220;traditional&#8221; class centric C# usage with lots of interfaces, constructor injection, and IoC usage. You&#8217;ll see what I mean when we hit the actual code</li>
+</ul>
+
+
+
+<p><em>I don&#8217;t think that mock objects are evil per se, but they&#8217;re absolutely over-used in our industry. All I&#8217;m trying to suggest in this post is to structure code such that you don&#8217;t have to depend on stubs or any other kind of fake to set up test inputs to business or workflow logic code.</em></p>
+
+
+
+<p>Consider the case of a message handler that needs to process a command message to apply a payment to principal within an existing loan. Depending on the amount and the account in question, the handler may need to raise domain events for early principle payment penalties (or alerts or whatever you actually do in this situation). That logic is going to need to know about both the related loan and account information in order to make that decision. The handler will also make changes to the loan to reflect the payment made as well, and commit those changes back to the database.</p>
+
+
+
+<p>Just to sum things up, this message handler needs to:</p>
+
+
+
+<ol>
+<li>Look up loan and account data</li>
+
+
+
+<li>Use that data to carry out the business logic</li>
+
+
+
+<li>Potentially persist the changed state</li>
+</ol>
+
+
+
+<p>Alright, on to the handler, which I&#8217;m going to accomplish with a single class that uses two separate methods:</p>
+
+
+<div class="wp-block-syntaxhighlighter-code "><pre class="brush: csharp; title: ; notranslate">
+public record PayPrincipal(Guid LoanId, decimal Amount, DateOnly EffectiveDate);
+
+public static class PayPrincipalHandler
+{
+    // Wolverine will call this method first by naming convention.
+    // If you prefer being more explicit, you can use any name you like and decorate
+    // this with &#91;Before] 
+    public static async Task&lt;(Account, LoanInformation)&gt; LoadAsync(PayPrincipal command, IDocumentSession session,
+        CancellationToken cancellation)
+    {
+        Account? account = null;
+        var loan = await session
+            .Query&lt;LoanInformation&gt;()
+            .Include&lt;Account&gt;(x =&gt; x.AccountId, a =&gt; account = a)
+            .Where(x =&gt; x.Id == command.LoanId)
+            .FirstOrDefaultAsync(token: cancellation);
+
+        if (loan == null) throw new UnknownLoanException(command.LoanId);
+        if (account == null) throw new UnknownAccountException(loan.AccountId);
+        
+        return (account, loan);
+    }
+
+    // This is the main handler, but it's able to use the data built
+    // up by the first method
+    public static IEnumerable&lt;object&gt; Handle(
+        // The command
+        PayPrincipal command,
+        
+        // The information loaded from the LoadAsync() method above
+        LoanInformation loan, 
+        Account account,
+        
+        // We need this only to mark items as changed
+        IDocumentSession session)
+    {
+        // The next post will switch this to event sourcing I think
+
+        var status = loan.AcceptPrincipalPayment(command.Amount, command.EffectiveDate);
+        switch (status)
+        {
+            case PrincipalStatus.BehindSchedule:
+                // Maybe send an alert? Act on this in some other way?
+                yield return new PrincipalBehindSchedule(loan.Id);
+                break;
+            
+            case PrincipalStatus.EarlyPayment:
+                if (!account.AllowsEarlyPayment)
+                {
+                    // Maybe just a notification?
+                    yield return new EarlyPrincipalPaymentDetected(loan.Id);
+                }
+
+                break;
+        }
+
+        // Mark the loan as being needing to be persisted
+        session.Store(loan);
+    }
+}
+</pre></div>
+
+
+<p>Wolverine itself is weaving in the call first to <code>LoadAsync()</code>, and piping the results of that method to the inputs of the inner <code>Handle()</code> method, which now gets to be almost a pure function with just the call to <code>IDocumentSession.Store()</code> being &#8220;impure&#8221; &#8212; but at least that one single method is relatively painless to mock.</p>
+
+
+
+<p>The point of doing this is really just to make the main <code>Handle()</code> method where the actual business logic is happening be very easily testable with unit tests as you can just push in the <code>Account</code> and <code>Loan</code> information. Especially in cases where there&#8217;s likely many permutations of inputs leading to different behaviors, it&#8217;s very advantageous to be able to walk right up to just the business rules and push inputs right into that, then do assertions on the messages returned from the <code>Handle()</code> function and/or assert on modifications to the <code>Loan</code> object.</p>
+
+
+
+<p></p>
+
+
+
+<p><em>TL:DR &#8212; Repository abstractions over persistence tooling can cause more harm than good.</em></p>
+
+
+
+<p>Also notice that I directly used a reference to the Marten <code>IDocumentSession</code> rather than wrapping some kind of <code>IRepository&lt;Loan&gt;</code> or <code>IAccountRepository</code> abstraction right around Marten. That was very purposeful. I think those abstractions &#8212; especially narrow, entity-centric abstractions around basic CRUD or load methods cause more harm than good in nontrivial enterprise systems. In the case above, I was using a touch of advanced, <a href="https://martendb.io/documents/querying/linq/include.html">Marten-specific behavior to load related documents in one network round trip</a> as a performance optimization. That&#8217;s the exact kind of powerful ability of specific persistence tools that&#8217;s thrown away by generic &#8220;IRepository of T&#8221; strategies &#8220;just in case we decide to change database technologies later&#8221; that I believe to be harmful in larger enterprise systems. Moreover, I think that kind of abstraction bloats the codebase and leads to poorly performing systems.</p>
+
+
+
+<p></p>
+
+
+
+<p></p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://jeremydmiller.com/2023/03/07/compound-handlers-in-wolverine/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+		
+		<media:content url="https://2.gravatar.com/avatar/83a17261fd4c9f537e63165df6ba57bb?s=96&#38;d=identicon&#38;r=G" medium="image">
+			<media:title type="html">jeremydmiller</media:title>
+		</media:content>
+
+		<media:content url="https://jeremydmiller.files.wordpress.com/2022/12/wolverine_banner.png?w=1024" medium="image" />
+	</item>
+		<item>
+		<title>Wolverine 0.9.13: Contextual Logging and More</title>
+		<link>https://jeremydmiller.com/2023/03/06/wolverine-0-9-13-contextual-logging-and-more/</link>
+					<comments>https://jeremydmiller.com/2023/03/06/wolverine-0-9-13-contextual-logging-and-more/#respond</comments>
+		
+		<dc:creator><![CDATA[jeremydmiller]]></dc:creator>
+		<pubDate>Tue, 07 Mar 2023 02:29:41 +0000</pubDate>
+				<category><![CDATA[Uncategorized]]></category>
+		<category><![CDATA[.Net]]></category>
+		<category><![CDATA[Marten]]></category>
+		<category><![CDATA[Wolverine]]></category>
+		<guid isPermaLink="false">http://jeremydmiller.com/?p=10591</guid>
+
+					<description><![CDATA[We&#8217;re dogfooding Wolverine at work and the Critter Stack Discord is pretty active right now. All of that means that issues and opportunities to improve Wolverine are coming in fast right now. I just pushed Wolverine 0.9.13 (the Nugets are all named &#8220;WolverineFx&#8221; something because someone is squatting on the &#8220;Wolverine&#8221; name in Nuget). First, &#8230; <a href="https://jeremydmiller.com/2023/03/06/wolverine-0-9-13-contextual-logging-and-more/" class="more-link">Continue reading <span class="screen-reader-text">Wolverine 0.9.13: Contextual Logging and&#160;More</span> <span class="meta-nav">&#8594;</span></a>]]></description>
+										<content:encoded><![CDATA[
+<figure class="wp-block-image size-large"><a href="https://jeremydmiller.files.wordpress.com/2022/12/wolverine_banner.png"><img data-attachment-id="10293" data-permalink="https://jeremydmiller.com/2022/12/28/my-oss-plans-for-2023/wolverine_banner/" data-orig-file="https://jeremydmiller.files.wordpress.com/2022/12/wolverine_banner.png" data-orig-size="1072,482" data-comments-opened="1" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;}" data-image-title="wolverine_banner" data-image-description="" data-image-caption="" data-medium-file="https://jeremydmiller.files.wordpress.com/2022/12/wolverine_banner.png?w=300" data-large-file="https://jeremydmiller.files.wordpress.com/2022/12/wolverine_banner.png?w=1024" src="https://jeremydmiller.files.wordpress.com/2022/12/wolverine_banner.png?w=1024" alt="" class="wp-image-10293" srcset="https://jeremydmiller.files.wordpress.com/2022/12/wolverine_banner.png?w=1024 1024w, https://jeremydmiller.files.wordpress.com/2022/12/wolverine_banner.png?w=150 150w, https://jeremydmiller.files.wordpress.com/2022/12/wolverine_banner.png?w=300 300w, https://jeremydmiller.files.wordpress.com/2022/12/wolverine_banner.png?w=768 768w, https://jeremydmiller.files.wordpress.com/2022/12/wolverine_banner.png 1072w" sizes="(max-width: 1024px) 100vw, 1024px" /></a></figure>
+
+
+
+<p>We&#8217;re dogfooding <a href="https://wolverine.netlify.app">Wolverine</a> at work and the <a href="https://discord.gg/wBkZGpe3">Critter Stack Discord</a> is pretty active right now. All of that means that issues and opportunities to improve Wolverine are coming in fast right now. I just pushed Wolverine 0.9.13 (the Nugets are all named &#8220;WolverineFx&#8221; something because someone is squatting on the &#8220;Wolverine&#8221; name in Nuget).</p>
+
+
+
+<p>First, quick thanks to <a href="https://github.com/robinarrowsmith">Robin Arrowsmith</a> for finding and fixing an issue with Wolverine&#8217;s Azure Service Bus support. And a more general thank you to the nascent Wolverine community for being so helpful working with me in Discord to improve Wolverine. </p>
+
+
+
+<p>A few folks are reporting various issues with Wolverine handler discovery. To help alleviate whatever those issues turn out to be, Wolverine has a new mechanism to troubleshoot &#8220;<a href="https://wolverine.netlify.app/guide/handlers/discovery.html#troubleshooting-handler-discovery">why is my handler not being found by Wolverine</a>?!?&#8221; issues. </p>
+
+
+
+<p>We&#8217;re converting a service at work that lives within a giant distributed system that&#8217;s using NServiceBus for messaging today, so weirdly enough, there&#8217;s some important improvements for Wolverine&#8217;s interoperability with NServiceBus.</p>
+
+
+
+<p>This will be worth a full blog post soon, but there&#8217;s some ability to add <a href="https://wolverine.netlify.app/guide/logging.html#contextual-logging-with-audited-members">contextual logging about your domain</a> (account numbers, tenants, product numbers, etc.) to Wolverine&#8217;s open telemetry and/or logging support. My personal goal here is to have all the necessary and valuable correlation between system activity, performance, and logged problems without forcing the development team to write repetitive code throughout their message handler code.</p>
+
+
+
+<p>And one massive bug fix for how Wolverine generates runtime code in conjunction with your IoC service registrations for objects created by Wolverine itself. That&#8217;s a huge amount of technical mumbo jumbo that amounts to &#8220;even though Jeremy really doesn&#8217;t approve, you can inject Marten <code>IDocumentSession</code> or EF Core <code>DbContext</code> objects into repository classes while still using Wolverine transactional middleware and outbox support.&#8221; See <a href="https://github.com/JasperFx/wolverine/issues/218">this issue for more context</a>. It&#8217;s a hugely important fix for folks who choose to use Wolverine with a typical, .NET Onion/Clean architecture with lots of constructor injection, repository wrappers, and making the garbage collection work like crazy at runtime. </p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://jeremydmiller.com/2023/03/06/wolverine-0-9-13-contextual-logging-and-more/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+		
+		<media:content url="https://2.gravatar.com/avatar/83a17261fd4c9f537e63165df6ba57bb?s=96&#38;d=identicon&#38;r=G" medium="image">
+			<media:title type="html">jeremydmiller</media:title>
+		</media:content>
+
+		<media:content url="https://jeremydmiller.files.wordpress.com/2022/12/wolverine_banner.png?w=1024" medium="image" />
+	</item>
+		<item>
+		<title>Critter Stack Roadmap (Marten, Wolverine, Weasel)</title>
+		<link>https://jeremydmiller.com/2023/03/02/critter-stack-roadmap-marten-wolverine-weasel/</link>
+					<comments>https://jeremydmiller.com/2023/03/02/critter-stack-roadmap-marten-wolverine-weasel/#respond</comments>
+		
+		<dc:creator><![CDATA[jeremydmiller]]></dc:creator>
+		<pubDate>Fri, 03 Mar 2023 03:27:54 +0000</pubDate>
+				<category><![CDATA[Uncategorized]]></category>
+		<category><![CDATA[.Net]]></category>
+		<category><![CDATA[Marten]]></category>
+		<category><![CDATA[Wolverine]]></category>
+		<guid isPermaLink="false">http://jeremydmiller.com/?p=10527</guid>
+
+					<description><![CDATA[This post is mostly an attempt to gather feedback from anyone out there interested enough to respond. Comment here, or better yet, tell us and the community what you&#8217;re interested in in the Critter Stack Discord community. The so called &#8220;Critter Stack&#8221; is Marten, Wolverine, and a host of smaller, shared supporting projects within the &#8230; <a href="https://jeremydmiller.com/2023/03/02/critter-stack-roadmap-marten-wolverine-weasel/" class="more-link">Continue reading <span class="screen-reader-text">Critter Stack Roadmap (Marten, Wolverine,&#160;Weasel)</span> <span class="meta-nav">&#8594;</span></a>]]></description>
+										<content:encoded><![CDATA[
+<figure class="wp-block-image size-large"><a href="https://jeremydmiller.files.wordpress.com/2020/12/banner.png"><img data-attachment-id="8815" data-permalink="https://jeremydmiller.com/2020/12/29/my-2021-oss-plans-marten-jasper-storyteller-and-more/banner-2/" data-orig-file="https://jeremydmiller.files.wordpress.com/2020/12/banner.png" data-orig-size="1493,502" data-comments-opened="1" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;}" data-image-title="banner" data-image-description="" data-image-caption="" data-medium-file="https://jeremydmiller.files.wordpress.com/2020/12/banner.png?w=300" data-large-file="https://jeremydmiller.files.wordpress.com/2020/12/banner.png?w=1024" src="https://jeremydmiller.files.wordpress.com/2020/12/banner.png?w=1024" alt="" class="wp-image-8815" srcset="https://jeremydmiller.files.wordpress.com/2020/12/banner.png?w=1024 1024w, https://jeremydmiller.files.wordpress.com/2020/12/banner.png?w=150 150w, https://jeremydmiller.files.wordpress.com/2020/12/banner.png?w=300 300w, https://jeremydmiller.files.wordpress.com/2020/12/banner.png?w=768 768w, https://jeremydmiller.files.wordpress.com/2020/12/banner.png 1493w" sizes="(max-width: 1024px) 100vw, 1024px" /></a></figure>
+
+
+
+<p><em>This post is mostly an attempt to gather feedback from anyone out there interested enough to respond. Comment here, or better yet, tell us and the community what you&#8217;re interested in in the <a href="https://discord.gg/wBkZGpe3">Critter Stack Discord community</a>.</em></p>
+
+
+
+<p>The so called &#8220;Critter Stack&#8221; is <a href="https://martendb.io">Marten</a>, <a href="https://wolverine.netlify.app">Wolverine</a>, and a host of smaller, shared supporting projects within the <a href="https://github.com/JasperFx/marten/releases/tag/5.7.0">greater JasperFx umbrella</a>. Marten has been around for while now, just hit the &#8220;1,000 closed pull request&#8221; milestone, and will reach the 4 million download mark sometime next week. Wolverine is getting some early adopter love right now, and the feedback is being very encouraging to me right now. </p>
+
+
+
+<p>The goal for this year is to make the Critter Stack the best technical choice for a CQRS with Event Sourcing style architecture across every technical ecosystem &#8212; and a strong candidate for server side development on the .NET platform for other types of architectural strategies. That&#8217;s a bold goal, and there&#8217;s a lot to do to fill in missing features and increase the ability of the Critter Stack to scale up to extremely large workloads. To keep things moving, the core team banged out our immediate road map for the next couple months:</p>
+
+
+
+<ol>
+<li>Marten 6.0 within a couple weeks. This isn&#8217;t a huge release in terms of API changes, but sets us up for the future</li>
+
+
+
+<li>Wolverine 1.0 shortly after. I think I&#8217;m to the point of saying the main priority is finishing the documentation website and conducting some serious load and chaos testing against the Rabbit MQ and Marten integrations (weirdly enough the exact technical stack we&#8217;ll be using at my job)</li>
+
+
+
+<li>Marten 6.1: Formal event subscription mechanisms as part of Marten (ability to selectively publish events to a listener of some sort or a messaging broker). You can do this today as shown in <a href="https://event-driven.io/en/integrating_Marten/">Oskar&#8217;s blog post</a>, but it&#8217;s not a first class citizen and not as efficient as it should be. Plus you&#8217;d want both &#8220;hot&#8221; and &#8220;cold&#8221; subscriptions.</li>
+
+
+
+<li>Wolverine 1.1: Direct support for the subscription model within Marten so that you have ready recipes to publish events from Marten with Wolverine&#8217;s messaging capabilities. Technically, you can already do this with Wolverine + Marten&#8217;s outbox integration, but that only works through Wolverine handlers. Adding the first class recipe for &#8220;Marten to Wolverine messaging&#8221; I think will make it awfully easy to get up and going with event subscriptions fast.</li>
+</ol>
+
+
+
+<p>Right now, Marten 6 and Wolverine 1.0 have lingered for awhile, so it&#8217;s time to get them out. After that, subscriptions seem to be the biggest source of user questions and requests right now, so that&#8217;s the obvious next thing to do. After that though, here&#8217;s a rundown of some of the major initiatives we could pursue in either Marten or Wolverine this year (and some straddle the line):</p>
+
+
+
+<ul>
+<li><strong>End to end multi-tenancy support in Wolverine, Marten, and ASP.Net Core</strong>. Marten has strong support for multi-tenancy, but users have to piece things together themselves together within their applications. Wolverine&#8217;s Marten integration is currently limited to only one Marten database per application</li>
+
+
+
+<li><strong>Hot/cold storage for active vs archived events</strong>. This is all about massive scalability for the event sourcing storage</li>
+
+
+
+<li><strong>Sharding the asynchronous projections to distribute work across multiple running nodes</strong>. More about scaling the event sourcing</li>
+
+
+
+<li><strong>Zero down time projection rebuilds</strong>. Big user ask. Probably also includes trying to optimize the heck out of the performance of this feature too</li>
+
+
+
+<li><strong>More advanced message broker feature support</strong>. AWS SNS support. Azure Service Bus topics support. Message batching in Rabbit MQ</li>
+
+
+
+<li><strong>Improving the Linq querying in Marten</strong>. At some point soon, I&#8217;d like to try to utilize the sql/json support within Postgresql to try to improve the Linq query performance and fill in more gaps in the support. Especially for querying within child collections. And better <code>Select()</code> transform support. That&#8217;s a neverending battle. </li>
+
+
+
+<li><strong>Optimized serverless story in Wolverine</strong>. Not exactly sure what this means, but I&#8217;m thinking to do something that tries to drastically reduce the &#8220;cold start&#8221; time</li>
+
+
+
+<li><strong>Open Telemetry support within Marten</strong>. It&#8217;s baked in with Wolverine, but not Marten yet. I think that&#8217;s going to be an opt in feature though</li>
+
+
+
+<li><strong>More persistence options within Wolverine</strong>. I&#8217;ll always be more interested in the full Wolverine + Marten stack, but I&#8217;d be curious to try out DynamoDb or CosmosDb support as well</li>
+</ul>
+
+
+
+<p>There&#8217;s tons of other things to possibly do, but that list is what I&#8217;m personally most interested in our community getting to this year. No way there&#8217;s enough bandwidth for everything, so it&#8217;s time to start asking folks what they want out of these tools in the near future.</p>
+
+
+
+<p></p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://jeremydmiller.com/2023/03/02/critter-stack-roadmap-marten-wolverine-weasel/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+		
+		<media:content url="https://2.gravatar.com/avatar/83a17261fd4c9f537e63165df6ba57bb?s=96&#38;d=identicon&#38;r=G" medium="image">
+			<media:title type="html">jeremydmiller</media:title>
+		</media:content>
+
+		<media:content url="https://jeremydmiller.files.wordpress.com/2020/12/banner.png?w=1024" medium="image" />
+	</item>
+		<item>
+		<title>Useful Tricks with Lamar for Integration Testing</title>
+		<link>https://jeremydmiller.com/2023/03/01/useful-tricks-with-lamar-for-integration-testing/</link>
+					<comments>https://jeremydmiller.com/2023/03/01/useful-tricks-with-lamar-for-integration-testing/#respond</comments>
+		
+		<dc:creator><![CDATA[jeremydmiller]]></dc:creator>
+		<pubDate>Wed, 01 Mar 2023 19:42:44 +0000</pubDate>
+				<category><![CDATA[Uncategorized]]></category>
+		<category><![CDATA[.Net]]></category>
+		<category><![CDATA[Automated Testing]]></category>
+		<category><![CDATA[Lamar]]></category>
+		<category><![CDATA[Marten]]></category>
+		<category><![CDATA[Wolverine]]></category>
+		<guid isPermaLink="false">http://jeremydmiller.com/?p=10555</guid>
+
+					<description><![CDATA[Earlier this week I started a new blog series on Wolverine &#38; Marten: Earlier this week I started a new series of blog posts about Wolverine capabilities with: Today I&#8217;m taking a left turn in Albuquerque to talk about how to deal with injecting fake services in integration test scenarios for external service gateways in &#8230; <a href="https://jeremydmiller.com/2023/03/01/useful-tricks-with-lamar-for-integration-testing/" class="more-link">Continue reading <span class="screen-reader-text">Useful Tricks with Lamar for Integration&#160;Testing</span> <span class="meta-nav">&#8594;</span></a>]]></description>
+										<content:encoded><![CDATA[
+<figure class="wp-block-image size-large"><a href="https://jeremydmiller.files.wordpress.com/2022/12/lamar.jpg"><img data-attachment-id="10300" data-permalink="https://jeremydmiller.com/2022/12/28/my-oss-plans-for-2023/lamar/" data-orig-file="https://jeremydmiller.files.wordpress.com/2022/12/lamar.jpg" data-orig-size="1200,466" data-comments-opened="1" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;}" data-image-title="lamar" data-image-description="" data-image-caption="" data-medium-file="https://jeremydmiller.files.wordpress.com/2022/12/lamar.jpg?w=300" data-large-file="https://jeremydmiller.files.wordpress.com/2022/12/lamar.jpg?w=1024" src="https://jeremydmiller.files.wordpress.com/2022/12/lamar.jpg?w=1024" alt="" class="wp-image-10300" srcset="https://jeremydmiller.files.wordpress.com/2022/12/lamar.jpg?w=1024 1024w, https://jeremydmiller.files.wordpress.com/2022/12/lamar.jpg?w=150 150w, https://jeremydmiller.files.wordpress.com/2022/12/lamar.jpg?w=300 300w, https://jeremydmiller.files.wordpress.com/2022/12/lamar.jpg?w=768 768w, https://jeremydmiller.files.wordpress.com/2022/12/lamar.jpg 1200w" sizes="(max-width: 1024px) 100vw, 1024px" /></a></figure>
+
+
+
+<p>Earlier this week I started a new blog series on Wolverine &amp; Marten:</p>
+
+
+
+<p>Earlier this week I started a new series of blog posts about Wolverine capabilities with:</p>
+
+
+
+<ul>
+<li><a href="https://jeremydmiller.com/2023/02/27/producer-consumer-pattern-with-wolverine/">Producer/Consumer Pattern with&nbsp;Wolverine</a></li>
+
+
+
+<li><a href="https://jeremydmiller.com/2023/02/28/resiliency-with-wolverine/">Resiliency with Wolverine</a></li>
+</ul>
+
+
+
+<p>Today I&#8217;m taking a left turn in Albuquerque to talk about how to deal with injecting fake services in integration test scenarios for external service gateways in <a href="https://wolverine.netlify.app">Wolverine</a> applications using some tricks in the underlying <a href="https://jasperfx.github.io/lamar">Lamar IoC container</a> &#8212; or really just anything that turns out to be difficult to deal with in automated tests.</p>
+
+
+
+<p>Since this is a headless service, I&#8217;m not too keen on introducing <a href="https://jasperfx.github.io/alba">Alba</a> or <a href="https://learn.microsoft.com/en-us/aspnet/core/test/integration-tests?view=aspnetcore-7.0">WebApplicationFactory</a> and all their humongous tail of ASP.Net Core dependencies. Instead, I made a mild change to the <code>Program</code> file of the main application to revert back to the &#8220;old&#8221; .NET 6 style of bootstrapping instead of the newer, implied <code>Program.Main()</code> style strictly to facilitate integration testing:</p>
+
+
+<div class="wp-block-syntaxhighlighter-code "><pre class="brush: csharp; title: ; notranslate">
+public static class Program
+{
+    public static Task&lt;int&gt; Main(string&#91;] args)
+    {
+        return CreateHostBuilder().RunOaktonCommands(args);
+    }
+
+    // This method is a really easy way to bootstrap the application
+    // in testing later
+    public static IHostBuilder CreateHostBuilder()
+    {
+        return Host.CreateDefaultBuilder()
+            .UseWolverine((context, opts) =&gt;
+            {
+                // And a lot of necessary configuration here....
+            });
+    }
+}
+</pre></div>
+
+
+<p>Now, I&#8217;m going to start a new <a href="https://xunit.net/">xUnit.Net</a> project to test the main application (NUnit or MSTest would certainly be viable as well). In the testing project, I want to test the payment ingestion service from the prior blog posts with basically the exact same set up as the main application, with the exception of replacing the service gateway for the &#8220;very unreliable 3rd party service&#8221; with a stub that we can control at will during testing. That stub could look like this:</p>
+
+
+<div class="wp-block-syntaxhighlighter-code "><pre class="brush: csharp; title: ; notranslate">
+// More on this later...
+public interface IStatefulStub
+{
+    void ClearState();
+}
+
+public class ThirdPartyServiceStub : IThirdPartyServiceGateway, IStatefulStub
+{
+    public Dictionary&lt;Guid, LoanInformation&gt; LoanInformation { get; } = new();
+    
+    public Task&lt;LoanInformation&gt; FindLoanInformationAsync(Guid loanId, CancellationToken cancellation)
+    {
+        if (LoanInformation.TryGetValue(loanId, out var information))
+        {
+            return Task.FromResult(information);
+        }
+
+        // I suppose you'd throw a more specific exception type, but I'm lazy, so....
+        throw new ArgumentOutOfRangeException(nameof(loanId), &quot;Unknown load id&quot;);
+    }
+
+    public Task PostPaymentScheduleAsync(PaymentSchedule schedule, CancellationToken cancellation)
+    {
+        PostedSchedules.Add(schedule);
+        return Task.CompletedTask;
+    }
+
+    public List&lt;PaymentSchedule&gt; PostedSchedules { get; } = new();
+    public void ClearState()
+    {
+        PostedSchedules.Clear();
+        LoanInformation.Clear();
+    }
+}
+</pre></div>
+
+
+<p>Now that we have a usable stub for later, let&#8217;s build up a test harness for our application. Right off the bat, I&#8217;m going to say that we won&#8217;t even try to run integration tests in parallel, so I&#8217;m going for a shared context that bootstraps the applications <code>IHost</code>:</p>
+
+
+<div class="wp-block-syntaxhighlighter-code "><pre class="brush: csharp; title: ; notranslate">
+public class AppFixture : IAsyncLifetime
+{
+    public async Task InitializeAsync()
+    {
+        // This is bootstrapping the actual application using
+        // its implied Program.Main() set up
+        Host = await Program.CreateHostBuilder()
+            // This is from Lamar, this will override the service registrations
+            // no matter what order registrations are done. This was specifically
+            // intended for automated testing scenarios
+            .OverrideServices(services =&gt;
+            {
+                // Override the existing application's registration with a stub
+                // for the third party service gateway
+                services.AddSingleton&lt;IThirdPartyServiceGateway&gt;(ThirdPartyService);
+            }).StartAsync();
+
+    }
+
+    // Just a convenient way to get at this later
+    public ThirdPartyServiceStub ThirdPartyService { get; } = new();
+
+    public IHost Host { get; private set; }
+ 
+    public Task DisposeAsync()
+    {
+        return Host.StopAsync();
+    }
+}
+</pre></div>
+
+
+<p>So a couple comments about the code up above:</p>
+
+
+
+<ul>
+<li>I&#8217;m delegating to the <code>Program.CreateHostBuilder()</code> method from our real application to create an <code>IHostBuilder</code> that is exactly the application itself. I think it&#8217;s important to do integration tests as close to the real application as possible so you don&#8217;t get false positives or false negatives from some sort of different bootstrapping or configuration of the application.</li>
+
+
+
+<li>That being said, it&#8217;s absolutely going to be a pain in the ass to use the real &#8220;unreliable 3rd party service&#8221; in integration testing, so it would be very convenient to have a nice, easily controlled stub or &#8220;spy&#8221; we can use to capture data sent to the 3rd party or to set up responses from the 3rd party service</li>
+
+
+
+<li>And no, we don&#8217;t know if your application actually works end to end if we use the whitebox testing approach, and there is very likely going to be unforeseen issues when we integrate with the real 3rd party service. All that being said, it&#8217;s very helpful to first know that <strong>our</strong> code works exactly the way we intended it to before we tackle fully end to end tests.</li>
+
+
+
+<li>But if this were a real project, I&#8217;d spike the actual 3rd party gateway code ASAP because that&#8217;s likely where the major project risk is. In the real life project this was based on, that gateway code was not under my purview at first and I might have gotten myself temporarily banned from the client site after finally snapping at the developer &#8220;responsible&#8221; for that after about a year of misery. Moving on!</li>
+
+
+
+<li>Lamar is StructureMap&#8217;s descendent, but it&#8217;s nowhere near as loosey-goosey flexible about runtime service overrides as StructureMap. That was very purposeful on my part as that led to Lamar having vastly better (1-3 orders of magnitude improvement) performance, and also to reduce my stress level by simplifying the Lamar usage over StructureMap&#8217;s endlessly complicated rules for service overrides. Long story short, that requires you to think through in advance a little bit about what services are going to be overridden in tests and to frankly use that sparingly compared to what was easy in StructureMap years ago.</li>
+</ul>
+
+
+
+<p>Next, I&#8217;ll add the necessary xUnit <code>ICollectionFixture</code> type that I almost always forget to do at first unless I&#8217;m copy/pasting code from somewhere else:</p>
+
+
+<div class="wp-block-syntaxhighlighter-code "><pre class="brush: csharp; title: ; notranslate">
+&#91;CollectionDefinition(&quot;integration&quot;)]
+public class ScenarioCollection : ICollectionFixture&lt;AppFixture&gt;
+{
+     
+}
+</pre></div>
+
+
+<p>Now, I like to have a base class for integration tests that just adds a tiny bit of reusable helpers and lifecycle methods to clean up the system state before all tests:</p>
+
+
+<div class="wp-block-syntaxhighlighter-code "><pre class="brush: csharp; title: ; notranslate">
+public abstract class IntegrationContext : IAsyncLifetime
+{
+    public IntegrationContext(AppFixture fixture)
+    {
+        Host = fixture.Host;
+        Store = Host.Services.GetRequiredService&lt;IDocumentStore&gt;();
+        ThirdPartyService = fixture.ThirdPartyService;
+    }
+
+    public ThirdPartyServiceStub ThirdPartyService { get; set; }
+
+    public IHost Host { get; }
+    public IDocumentStore Store { get; }
+
+    async Task IAsyncLifetime.InitializeAsync()
+    {
+        // Using Marten, wipe out all data and reset the state
+        // back to exactly what we described in InitialAccountData
+        await Store.Advanced.ResetAllData();
+        
+        // Clear out all the stateful stub state too!
+        // First, I'm getting at the broader Lamar service
+        // signature to do Lamar-specific things...
+        var container = (IContainer)Host.Services;
+
+        // Find every possible service that's registered in Lamar that implements
+        // the IStatefulStub interface, resolve them, and loop though them 
+        // like so
+        foreach (var stub in container.Model.GetAllPossible&lt;IStatefulStub&gt;())
+        {
+            stub.ClearState();
+        }
+    }
+ 
+    // This is required because of the IAsyncLifetime 
+    // interface. Note that I do *not* tear down database
+    // state after the test. That's purposeful
+    public Task DisposeAsync()
+    {
+        return Task.CompletedTask;
+    }
+
+}
+</pre></div>
+
+
+<p>And now, some comments about that bit of code. You generally want a clean slate of system state going into each test, and our stub for the 3rd party system is stateful, so we&#8217;d want to clear it out between tests to keep from polluting the next test. That what the `IStatefulStub` interface and the calls to <code>GetAllPossible()</code> is helping us do with the Lamar container. If the system grows and we use more stubs, we can use that mechanism to have a one stop shop to clear out any stateful objects in the container between tests.</p>
+
+
+
+<p>Lastly, here&#8217;s a taste of how the full test harness might be used:</p>
+
+
+<div class="wp-block-syntaxhighlighter-code "><pre class="brush: csharp; title: ; notranslate">
+public class ASampleTestHarness : IntegrationContext
+{
+    public ASampleTestHarness(AppFixture fixture) : base(fixture)
+    {
+    }
+
+    &#91;Fact]
+    public async Task how_the_test_might_work()
+    {
+        // Do the Arrange and Act part of the tests....
+        await Host.InvokeMessageAndWaitAsync(new PaymentValidated(new Payment()));
+
+        // Our test *should* have posted a single payment schedule
+        // within the larger workflow, and this will blow up if there's
+        // none or many
+        var schedule = ThirdPartyService.PostedSchedules.Single();
+        
+        // Write assertions against the expected data for the schedule maybe?
+    }
+}
+</pre></div>
+
+
+<p>The <code>InvokeMessageAndWaitAsync()</code> is baked into <a href="https://wolverine.netlify.app/guide/testing.html">Wolverine&#8217;s test automation support</a>.</p>
+
+
+
+<p></p>
+
+
+
+<h2 class="wp-block-heading">Summary and next time&#8230;</h2>
+
+
+
+<p>I don&#8217;t like piecing together special application bootstrapping in the test automation projects, as that tends to drift apart from the actual application over time. Instead, I&#8217;d rather use the application&#8217;s own bootstrapping &#8212; in this case how it builds up an <code>IHostBuilder</code> &#8212; then apply some limited number of testing overrides. </p>
+
+
+
+<p>Lamar has a couple helpers for test automation, including the <code>OverrideServices()</code> method and the <code>GetAllPossible()</code> helper that can be useful for clearing out state between tests in stubs or caches or who knows what else in a systematic way.</p>
+
+
+
+<p>So far I&#8217;ve probably mostly blogged about things that Wolverine does that other tools like NServiceBus, MassTransit, or MediatR do as well. Next time out, I want to go completely off road where those tools can&#8217;t follow and into Wolverine&#8217;s &#8220;<a href="https://wolverine.netlify.app/guide/handlers/#compound-handlers">compound handler</a>&#8221; strategy for maximum testability using<a href="https://www.jamesshore.com/v2/projects/nullables/testing-without-mocks#a-frame-arch"> Jim Shore&#8217;s A-Frame Architecture</a> approach.</p>
+
+
+
+<figure class="wp-block-image size-large"><a href="https://jeremydmiller.files.wordpress.com/2023/03/image.png"><img data-attachment-id="10576" data-permalink="https://jeremydmiller.com/2023/03/01/useful-tricks-with-lamar-for-integration-testing/image-14/" data-orig-file="https://jeremydmiller.files.wordpress.com/2023/03/image.png" data-orig-size="800,450" data-comments-opened="1" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;}" data-image-title="image" data-image-description="" data-image-caption="" data-medium-file="https://jeremydmiller.files.wordpress.com/2023/03/image.png?w=300" data-large-file="https://jeremydmiller.files.wordpress.com/2023/03/image.png?w=800" src="https://jeremydmiller.files.wordpress.com/2023/03/image.png?w=800" alt="" class="wp-image-10576" srcset="https://jeremydmiller.files.wordpress.com/2023/03/image.png 800w, https://jeremydmiller.files.wordpress.com/2023/03/image.png?w=150 150w, https://jeremydmiller.files.wordpress.com/2023/03/image.png?w=300 300w, https://jeremydmiller.files.wordpress.com/2023/03/image.png?w=768 768w" sizes="(max-width: 800px) 100vw, 800px" /></a></figure>
+
+
+
+<p></p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://jeremydmiller.com/2023/03/01/useful-tricks-with-lamar-for-integration-testing/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+		
+		<media:content url="https://2.gravatar.com/avatar/83a17261fd4c9f537e63165df6ba57bb?s=96&#38;d=identicon&#38;r=G" medium="image">
+			<media:title type="html">jeremydmiller</media:title>
+		</media:content>
+
+		<media:content url="https://jeremydmiller.files.wordpress.com/2022/12/lamar.jpg?w=1024" medium="image" />
+
+		<media:content url="https://jeremydmiller.files.wordpress.com/2023/03/image.png?w=800" medium="image" />
+	</item>
+		<item>
+		<title>Resiliency with Wolverine</title>
+		<link>https://jeremydmiller.com/2023/02/28/resiliency-with-wolverine/</link>
+					<comments>https://jeremydmiller.com/2023/02/28/resiliency-with-wolverine/#respond</comments>
+		
+		<dc:creator><![CDATA[jeremydmiller]]></dc:creator>
+		<pubDate>Tue, 28 Feb 2023 20:23:00 +0000</pubDate>
+				<category><![CDATA[Uncategorized]]></category>
+		<category><![CDATA[.Net]]></category>
+		<category><![CDATA[Marten]]></category>
+		<category><![CDATA[Wolverine]]></category>
+		<guid isPermaLink="false">http://jeremydmiller.com/?p=10528</guid>
+
+					<description><![CDATA[Yesterday I started a new series of blog posts about Wolverine capabilities with: To review, I was describing a project I worked on years ago that involved some interactions with a very unreliable 3rd party web service system to handle payments originating from a flat file: Just based on that diagram above, and admittedly some &#8230; <a href="https://jeremydmiller.com/2023/02/28/resiliency-with-wolverine/" class="more-link">Continue reading <span class="screen-reader-text">Resiliency with Wolverine</span> <span class="meta-nav">&#8594;</span></a>]]></description>
+										<content:encoded><![CDATA[
+<figure class="wp-block-image size-large"><a href="https://jeremydmiller.files.wordpress.com/2022/12/wolverine_banner.png"><img data-attachment-id="10293" data-permalink="https://jeremydmiller.com/2022/12/28/my-oss-plans-for-2023/wolverine_banner/" data-orig-file="https://jeremydmiller.files.wordpress.com/2022/12/wolverine_banner.png" data-orig-size="1072,482" data-comments-opened="1" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;}" data-image-title="wolverine_banner" data-image-description="" data-image-caption="" data-medium-file="https://jeremydmiller.files.wordpress.com/2022/12/wolverine_banner.png?w=300" data-large-file="https://jeremydmiller.files.wordpress.com/2022/12/wolverine_banner.png?w=1024" src="https://jeremydmiller.files.wordpress.com/2022/12/wolverine_banner.png?w=1024" alt="" class="wp-image-10293" srcset="https://jeremydmiller.files.wordpress.com/2022/12/wolverine_banner.png?w=1024 1024w, https://jeremydmiller.files.wordpress.com/2022/12/wolverine_banner.png?w=150 150w, https://jeremydmiller.files.wordpress.com/2022/12/wolverine_banner.png?w=300 300w, https://jeremydmiller.files.wordpress.com/2022/12/wolverine_banner.png?w=768 768w, https://jeremydmiller.files.wordpress.com/2022/12/wolverine_banner.png 1072w" sizes="(max-width: 1024px) 100vw, 1024px" /></a></figure>
+
+
+
+<p>Yesterday I started a new series of blog posts about Wolverine capabilities with:</p>
+
+
+
+<ul>
+<li><a href="https://jeremydmiller.com/2023/02/27/producer-consumer-pattern-with-wolverine/">Producer/Consumer Pattern with Wolverine</a></li>
+</ul>
+
+
+
+<p>To review, I was describing a project I worked on years ago that involved some interactions with a very unreliable 3rd party web service system to handle payments originating from a flat file:</p>
+
+
+
+<figure class="wp-block-image size-large"><a href="https://jeremydmiller.files.wordpress.com/2023/02/image-1.png"><img data-attachment-id="10510" data-permalink="https://jeremydmiller.com/2023/02/27/producer-consumer-pattern-with-wolverine/image-1-6/" data-orig-file="https://jeremydmiller.files.wordpress.com/2023/02/image-1.png" data-orig-size="808,396" data-comments-opened="1" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;}" data-image-title="image-1" data-image-description="" data-image-caption="" data-medium-file="https://jeremydmiller.files.wordpress.com/2023/02/image-1.png?w=300" data-large-file="https://jeremydmiller.files.wordpress.com/2023/02/image-1.png?w=808" src="https://jeremydmiller.files.wordpress.com/2023/02/image-1.png?w=808" alt="" class="wp-image-10510" srcset="https://jeremydmiller.files.wordpress.com/2023/02/image-1.png 808w, https://jeremydmiller.files.wordpress.com/2023/02/image-1.png?w=150 150w, https://jeremydmiller.files.wordpress.com/2023/02/image-1.png?w=300 300w, https://jeremydmiller.files.wordpress.com/2023/02/image-1.png?w=768 768w" sizes="(max-width: 808px) 100vw, 808px" /></a></figure>
+
+
+
+<p>Just based on that diagram above, and admittedly some bad experiences in the shake down cruise of the historical system that diagram was based on, here&#8217;s some of the things that can go wrong:</p>
+
+
+
+<ul>
+<li>The system blows up and dies while the payments from a particular file are only half way processed</li>
+
+
+
+<li>Transient errors from database connectivity. Network hiccups</li>
+
+
+
+<li>File IO errors from reading the flat files (I tend to treat direct file system access a lot like a poisonous snake due to very bad experiences early in my career)</li>
+
+
+
+<li>HTTP errors from timeouts calling the web service</li>
+
+
+
+<li>The 3rd party system is under distress and performing very poorly, such that a high percentage of requests are timing out</li>
+
+
+
+<li>The 3rd party system can be misconfigured after code migrations on its system so that it&#8217;s technically &#8220;up&#8221; and responsive, but nothing actually works</li>
+
+
+
+<li>The 3rd party system is completely down</li>
+</ul>
+
+
+
+<p>Man, it&#8217;s a scary world sometimes! </p>
+
+
+
+<p>Let&#8217;s say right now that our goal is as much as possible to have a system that is:</p>
+
+
+
+<ol>
+<li>Able to recover from errors without losing any ongoing work</li>
+
+
+
+<li>Doesn&#8217;t allow the system to permanently get into an inconsistent state &#8212; i.e. a file is marked as completely read, but somehow some of the payments from that file got lost along the way</li>
+
+
+
+<li>Rarely needs manual intervention from production support to recover work or restart work</li>
+
+
+
+<li>Heavens forbid, when something does happen that the system can&#8217;t recover from, it notifies production support</li>
+</ol>
+
+
+
+<p>Now let&#8217;s go onto how to utilize Wolverine features to satisfy those goals in the face of all the potential problems I identified.</p>
+
+
+
+<h2 class="wp-block-heading">What if the system dies halfway through a file?</h2>
+
+
+
+<p>If you read through the last post, I used the <a href="https://wolverine.netlify.app/guide/messaging/transports/local.html">local queueing mechanism</a> in Wolverine to effectively create a producer/consumer workflow. Great! But what if the current process manages to die before all the ongoing work is completed? That&#8217;s where the <a href="https://wolverine.netlify.app/guide/durability/">durable inbox support</a> in Wolverine comes in. </p>
+
+
+
+<p>Pulling Marten in as our persistence strategy (but EF Core with either Postgresql or Sql Server is fully supported for this use case as well), I&#8217;m going to set up the application to opt into durable inbox mechanics for all locally queued messages like so (after adding the WolverineFx.Marten Nuget):</p>
+
+
+<div class="wp-block-syntaxhighlighter-code "><pre class="brush: csharp; title: ; notranslate">
+using Marten;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Oakton;
+using Wolverine;
+using Wolverine.Marten;
+using WolverineIngestionService;
+
+return await Host.CreateDefaultBuilder()
+    .UseWolverine((context, opts) =&gt;
+    {
+        // There'd obviously be a LOT more set up and service registrations
+        // to be a real application
+
+        var connectionString = context.Configuration.GetConnectionString(&quot;marten&quot;);
+        opts.Services
+            .AddMarten(connectionString)
+            .IntegrateWithWolverine();
+
+        // I want all local queues in the application to be durable
+        opts.Policies.UseDurableLocalQueues();
+        opts.LocalQueueFor&lt;PaymentValidated&gt;().Sequential();
+        opts.LocalQueueFor&lt;PostPaymentSchedule&gt;().Sequential();
+    }).RunOaktonCommands(args);
+</pre></div>
+
+
+<p>And with those changes, all in flight messages in the local queues are also stored durably in the backing database. If the application process happens to fail in flight, the persisted messages will fail over to either another running node or be picked up by restarting the system process. </p>
+
+
+
+<p>So far, so good? Onward&#8230;</p>
+
+
+
+<h2 class="wp-block-heading">Getting Over transient hiccups</h2>
+
+
+
+<p>Sometimes database interactions will fail with transient errors and will very well succeed if retried later. This is especially common when the database is under stress. Wolverine&#8217;s <a href="https://wolverine.netlify.app/guide/handlers/error-handling.html">error handling policies</a> easily accommodate that, and in this case I&#8217;m going to add some retry capabilities for basic database exceptions like so:</p>
+
+
+<div class="wp-block-syntaxhighlighter-code "><pre class="brush: csharp; title: ; notranslate">
+        // Retry on basic database exceptions with some cooldown time in
+        // between retries
+        opts
+            .Policies
+            .OnException&lt;NpgsqlException&gt;()
+            .Or&lt;MartenCommandException&gt;()
+            .RetryWithCooldown(100.Milliseconds(), 250.Milliseconds(), 500.Milliseconds());
+
+        opts
+            .OnException&lt;TimeoutException&gt;()
+            .RetryWithCooldown(250.Milliseconds(), 500.Milliseconds());
+</pre></div>
+
+
+<p>Notice how I&#8217;ve specified some &#8220;cooldown&#8221; times for subsequent failures. This is more or less an example of exponential back off error handling that&#8217;s meant to effectively throttle a distressed subsystem to allow it to catch up and recover.</p>
+
+
+
+<p>Now though, not every exception implies that the message may magically succeed at a later time, so in that case&#8230;</p>
+
+
+
+<h2 class="wp-block-heading">Walk away from bad apples</h2>
+
+
+
+<p>Over time we can recognize exceptions that pretty well mean that the message can never succeed. In that case we should just throw out the message instead of allowing it to suck down resources by being retried multiple times. Wolverine happily supports that as well. Let&#8217;s say that payment messages can never work if it refers to an account that cannot be found, so let&#8217;s do this:</p>
+
+
+<div class="wp-block-syntaxhighlighter-code "><pre class="brush: csharp; title: ; notranslate">
+        // Just get out of there if the account referenced by a message
+        // does not exist!
+        opts
+            .OnException&lt;UnknownAccountException&gt;()
+            .Discard();
+</pre></div>
+
+
+<p>I should also note that Wolverine is writing to your application log when this happens.</p>
+
+
+
+<h2 class="wp-block-heading">Circuit Breakers to give the 3rd party system a timeout</h2>
+
+
+
+<p>As I&#8217;ve repeatedly said in this blog series so far, the &#8220;very unreliable 3rd party system&#8221; was somewhat less than reliable. What we found in practice was that the service would fail in bunches when it fell behind, but could recover over time. However, what would happen &#8212; even with the exponential back off policy &#8212; was that when the system was distressed it still couldn&#8217;t recover in time and continuing to pound it with retries just led to everything ending up in dead letter queues where it eventually required manual intervention to recover. That was exhausting and led to much teeth gnashing (and fingers pointed at me in angry meetings). In response to that, Wolverine comes with <a href="https://martinfowler.com/bliki/CircuitBreaker.html">circuit breaker </a>support as shown below:</p>
+
+
+<div class="wp-block-syntaxhighlighter-code "><pre class="brush: csharp; title: ; notranslate">
+        // These are the queues that handle calls to the 3rd party web service
+        opts.LocalQueueFor&lt;PaymentValidated&gt;()
+            .Sequential()
+            
+            // Add the circuit breaker
+            .CircuitBreaker(cb =&gt;
+            {
+                // If the conditions are met to stop processing messages,
+                // Wolverine will attempt to restart in 5 minutes
+                cb.PauseTime = 5.Minutes();
+
+                // Stop listening if there are more than 20% failures 
+                // over the tracking period
+                cb.FailurePercentageThreshold = 20;
+
+                // Consider the failures over the past minute
+                cb.TrackingPeriod = 1.Minutes();
+                
+                // Get specific about what exceptions should
+                // be considered as part of the circuit breaker
+                // criteria
+                cb.Include&lt;TimeoutException&gt;();
+
+                // This is our fault, so don't shut off the listener
+                // when this happens
+                cb.Exclude&lt;InvalidRequestException&gt;();
+            });
+        
+        opts.LocalQueueFor&lt;PostPaymentSchedule&gt;()
+            .Sequential()
+            
+            // Or the defaults might be just fine
+            .CircuitBreaker();
+</pre></div>
+
+
+<p>With the set up above, if Wolverine detects too high a rate of message failures in a given time, it will completely stop message processing for that particular local queue. Since we&#8217;ve isolated the message processing for the two types of calls to the 3rd party web service, we&#8217;re allowing everything else to continue when the circuit breaker stops message processing. Do note that the circuit breaker functionality will try to restart message processing later after the designated pause time. Hopefully the pause time allows for the 3rd party system to recover &#8212; or for production support to make it recover. All of this without making all the backed up messages continuously fail and end up landing in the dead letter queues where it will take manual intervention to recover the work in progress.</p>
+
+
+
+<h2 class="wp-block-heading">Hold the line, the 3rd party system is broken!</h2>
+
+
+
+<p>On top of every thing else, the &#8220;very unreliable 3rd party system&#8221; was easily misconfigured at the drop of a hat such that it would become completely nonfunctional even though it appeared to be responsive. When this happened, every single message to that service would fail. So again, instead of letting all our pending work end up in the dead letter queue, let&#8217;s instead completely pause all message handling on the current local queue (wherever the error happened) if we can tell from the exception that the 3rd party system is nonfunctional like so:</p>
+
+
+<div class="wp-block-syntaxhighlighter-code "><pre class="brush: csharp; title: ; notranslate">
+        // If we encounter this specific exception with this particular error code,
+        // it means that the 3rd party system is 100% nonfunctional even though it appears
+        // to be up, so let's pause all processing for 10 minutes
+        opts.OnException&lt;ThirdPartyOperationException&gt;(e =&gt; e.ErrorCode == 235)
+            .Requeue().AndPauseProcessing(10.Minutes());
+</pre></div>
+
+
+<p></p>
+
+
+
+<h2 class="wp-block-heading">Summary and next time!</h2>
+
+
+
+<p>It&#8217;s helpful to assign work within message handlers in such a way to maximize your error handling. Think hard about what actions in your system are prone to failure and may deserve to be their own individual message handler and messaging endpoint to allow for exact error handling policies like the way I used a circuit breaker on the queues that handled calls to the unreliable 3rd party service.</p>
+
+
+
+<p>For my next post in this series, I think I want to make a diversion into integration testing using a stand in stub for the 3rd party service using the application setup with <a href="https://jasperfx.github.io/lamar">Lamar</a>. </p>
+
+
+
+<p></p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://jeremydmiller.com/2023/02/28/resiliency-with-wolverine/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+		
+		<media:content url="https://2.gravatar.com/avatar/83a17261fd4c9f537e63165df6ba57bb?s=96&#38;d=identicon&#38;r=G" medium="image">
+			<media:title type="html">jeremydmiller</media:title>
+		</media:content>
+
+		<media:content url="https://jeremydmiller.files.wordpress.com/2022/12/wolverine_banner.png?w=1024" medium="image" />
+
+		<media:content url="https://jeremydmiller.files.wordpress.com/2023/02/image-1.png?w=808" medium="image" />
+	</item>
+		<item>
+		<title>Producer/Consumer Pattern with Wolverine</title>
+		<link>https://jeremydmiller.com/2023/02/27/producer-consumer-pattern-with-wolverine/</link>
+					<comments>https://jeremydmiller.com/2023/02/27/producer-consumer-pattern-with-wolverine/#respond</comments>
+		
+		<dc:creator><![CDATA[jeremydmiller]]></dc:creator>
+		<pubDate>Mon, 27 Feb 2023 17:38:26 +0000</pubDate>
+				<category><![CDATA[Uncategorized]]></category>
+		<category><![CDATA[Wolverine]]></category>
+		<guid isPermaLink="false">http://jeremydmiller.com/?p=10505</guid>
+
+					<description><![CDATA[This is going to be the start of a series of short blog posts to show off some Wolverine capabilities. You may very well point out that there are some architectural anti-patterns in the system I&#8217;m describing, and I would actually agree. I&#8217;ll try to address that as we go along, but just know this &#8230; <a href="https://jeremydmiller.com/2023/02/27/producer-consumer-pattern-with-wolverine/" class="more-link">Continue reading <span class="screen-reader-text">Producer/Consumer Pattern with&#160;Wolverine</span> <span class="meta-nav">&#8594;</span></a>]]></description>
+										<content:encoded><![CDATA[
+<figure class="wp-block-image size-large"><a href="https://jeremydmiller.files.wordpress.com/2022/12/wolverine_banner.png"><img data-attachment-id="10293" data-permalink="https://jeremydmiller.com/2022/12/28/my-oss-plans-for-2023/wolverine_banner/" data-orig-file="https://jeremydmiller.files.wordpress.com/2022/12/wolverine_banner.png" data-orig-size="1072,482" data-comments-opened="1" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;}" data-image-title="wolverine_banner" data-image-description="" data-image-caption="" data-medium-file="https://jeremydmiller.files.wordpress.com/2022/12/wolverine_banner.png?w=300" data-large-file="https://jeremydmiller.files.wordpress.com/2022/12/wolverine_banner.png?w=1024" src="https://jeremydmiller.files.wordpress.com/2022/12/wolverine_banner.png?w=1024" alt="" class="wp-image-10293" srcset="https://jeremydmiller.files.wordpress.com/2022/12/wolverine_banner.png?w=1024 1024w, https://jeremydmiller.files.wordpress.com/2022/12/wolverine_banner.png?w=150 150w, https://jeremydmiller.files.wordpress.com/2022/12/wolverine_banner.png?w=300 300w, https://jeremydmiller.files.wordpress.com/2022/12/wolverine_banner.png?w=768 768w, https://jeremydmiller.files.wordpress.com/2022/12/wolverine_banner.png 1072w" sizes="(max-width: 1024px) 100vw, 1024px" /></a></figure>
+
+
+
+<p><em>This is going to be the start of a series of short blog posts to show off some Wolverine capabilities. You may very well point out that there are some architectural anti-patterns in the system I&#8217;m describing, and I would actually agree. I&#8217;ll try to address that as we go along, but just know this is based on a very real system and reflects real world compromises that I was unhappy about at that time. Onward.</em></p>
+
+
+
+<p><a href="https://wolverine.netlify.app">Wolverine</a> has a strong in process queueing mechanism based around the <a href="https://learn.microsoft.com/en-us/dotnet/standard/parallel-programming/dataflow-task-parallel-library">TPL Dataflow</a> library &#8212; a frequently overlooked gem in the .NET ecosystem. Today I want to show how that capability allows you to reliably implement the <a href="https://en.wikipedia.org/wiki/Producer%E2%80%93consumer_problem">producer/consumer pattern</a> for parallelizing work with some sort of constrained resource. Consider this system I helped design and build several years ago:</p>
+
+
+
+<figure class="wp-block-image size-large"><a href="https://jeremydmiller.files.wordpress.com/2023/02/image-1.png"><img data-attachment-id="10510" data-permalink="https://jeremydmiller.com/2023/02/27/producer-consumer-pattern-with-wolverine/image-1-6/" data-orig-file="https://jeremydmiller.files.wordpress.com/2023/02/image-1.png" data-orig-size="808,396" data-comments-opened="1" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;}" data-image-title="image-1" data-image-description="" data-image-caption="" data-medium-file="https://jeremydmiller.files.wordpress.com/2023/02/image-1.png?w=300" data-large-file="https://jeremydmiller.files.wordpress.com/2023/02/image-1.png?w=808" src="https://jeremydmiller.files.wordpress.com/2023/02/image-1.png?w=808" alt="" class="wp-image-10510" srcset="https://jeremydmiller.files.wordpress.com/2023/02/image-1.png 808w, https://jeremydmiller.files.wordpress.com/2023/02/image-1.png?w=150 150w, https://jeremydmiller.files.wordpress.com/2023/02/image-1.png?w=300 300w, https://jeremydmiller.files.wordpress.com/2023/02/image-1.png?w=768 768w" sizes="(max-width: 808px) 100vw, 808px" /></a></figure>
+
+
+
+<p>It&#8217;s a somewhat typical &#8220;ingestion&#8221; service to read flat files representing payments to a series of client loans ultimately managed and tracked in what I called the &#8220;Very Unreliable 3rd Party Web Service&#8221; up above. Our application is responsible for reading, parsing, and validating the payments from a flat file that&#8217;s inevitably dropped in a secured FTP site (my least favorite mechanism for doing large scale integrations, but sadly common). Once the data is parsed, we need to implement this workflow for each payment:</p>
+
+
+
+<ol>
+<li>Validate the required data elements and reject any that are missing necessary information</li>
+
+
+
+<li>Retrieve information about the related accounts and loans from the 3rd party service into our service</li>
+
+
+
+<li>Do further validations and determine how the payment is to be applied to the loan (how much goes toward interest, fees, or principal)</li>
+
+
+
+<li>Persist a more or less audit log of all the results</li>
+
+
+
+<li>Post the application of the payment to the 3rd party system</li>
+</ol>
+
+
+
+<p>Now, let&#8217;s say that our application is receiving lots of these flat files throughout the day and it&#8217;s actually important for the business that these files be processed quickly. But there&#8217;s a catch in our potential throughput, the 3rd party web service can only handle one read request and one transactional request at one time without becoming unstable because of its oddball threading model (this sounds contrived, but it was unfortunately true). </p>
+
+
+
+<p>I&#8217;m going to say this is a perfect place to use the consumer/producer model where we&#8217;ll:</p>
+
+
+
+<ul>
+<li>Constrain the calls to the 3rd party web service to a dedicated activity thread that executes one at a time</li>
+
+
+
+<li>Do the other work (parsing, validating, determining the payment schedule) in other activity threads where parallelization is possible</li>
+</ul>
+
+
+
+<p>Admittedly starting in the middle of the process, let&#8217;s say that our Wolverine application detects a new file to the FTP site and publishes a new event to a message handler that will be the &#8220;Producer&#8221; to create individual payment workflows within our system:</p>
+
+
+<div class="wp-block-syntaxhighlighter-code "><pre class="brush: csharp; title: ; notranslate">
+    // This is a &quot;producer&quot; that is creating payment messages
+    public static IEnumerable&lt;object&gt; Handle(
+        FileDetected command, 
+        IFileParser parser, 
+        IPaymentValidator validator)
+    {
+        foreach (var payment in parser.ReadFile(command.FileName))
+        {
+            if (validator.TryValidate(payment, out var reasons))
+            {
+                yield return new PaymentValidated(payment);
+            }
+            else
+            {
+                yield return new PaymentRejected(payment, reasons);
+            }
+        }
+    }
+</pre></div>
+
+
+<p>For each file, we&#8217;ll publish individual messages for each payment to parallelize work. That leads to the next stage of work to look up information from the 3rd party service:</p>
+
+
+<div class="wp-block-syntaxhighlighter-code "><pre class="brush: csharp; title: ; notranslate">
+    public static async Task&lt;SchedulePayment&gt; Handle(
+        PaymentValidated @event, 
+        IThirdPartyServiceGateway gateway,
+        CancellationToken cancellation)
+    {
+        var information = await gateway.FindLoanInformationAsync(@event.Payment.LoanId, cancellation);
+        return new SchedulePayment(@event.Payment, information);
+    }
+</pre></div>
+
+
+<p>Note that the only work that particular handler is doing is calling the 3rd party service and handing off the results to yet another handler I&#8217;ll show next. Because the access to the 3rd party service is so constrained &#8212; and likely a performance bottleneck &#8212; we don&#8217;t want to be doing anything else in this handler but looking up data and passing it along.</p>
+
+
+
+<p>On to the next handler where we&#8217;ll do a bit of pure business logic to &#8220;schedule&#8221; the payment and how it will be applied to the loan in terms of what gets applied to interest, fees, or principle related to the loan balance.</p>
+
+
+<div class="wp-block-syntaxhighlighter-code "><pre class="brush: csharp; title: ; notranslate">
+    public static PostPaymentSchedule Handle(SchedulePayment command, PaymentSchedulerRules rules)
+    {
+        // Carry out a ton of business rules about how the payment
+        // is scheduled against interest, fees, principal, and early payment penalties
+        var schedule = rules.CreateSchedule(command.Payment, command.LoanInformation);
+        return new PostPaymentSchedule(schedule);
+    }
+</pre></div>
+
+
+<p>Finally, we&#8217;ll have one last handler thread to actually post the payment schedule to the 3rd party service:</p>
+
+
+<div class="wp-block-syntaxhighlighter-code "><pre class="brush: csharp; title: ; notranslate">
+    public static async Task Handle(
+        PostPaymentSchedule command, 
+        IThirdPartyServiceGateway gateway,
+        CancellationToken cancellation)
+    {
+        // I'm leaving it async here because I'm going to add a lot more to this
+        // in later posts
+        await gateway.PostPaymentScheduleAsync(command.Schedule, cancellation);
+    }
+</pre></div>
+
+
+<p>To rewind, we have these four command or event messages:</p>
+
+
+
+<ol>
+<li><code>FileDetected</code> &#8211; can be processed in parallel</li>
+
+
+
+<li><code>PaymentValidated</code> &#8211; has to be processed single file</li>
+
+
+
+<li><code>SchedulePayment</code> &#8211; can be processed in parallel</li>
+
+
+
+<li><code>PostPaymentSchedule</code> &#8211; has to be processed single file</li>
+</ol>
+
+
+
+<p>Moving to Wolverine setup, by default each locally handled message type is published to its own local queue with the parallelization set to the detected number of processors on the hosting server &#8212; but we can happily override that to handle any number of message types in the same local queue or to change the processing of an individual queue. In this case we&#8217;re going to change the message handling for <code>PaymentValidated</code> and <code>PostPaymentSchedule</code> to be processed sequentially:</p>
+
+
+<div class="wp-block-syntaxhighlighter-code "><pre class="brush: csharp; title: ; notranslate">
+using Microsoft.Extensions.Hosting;
+using Oakton;
+using Wolverine;
+using WolverineIngestionService;
+
+return await Host.CreateDefaultBuilder()
+    .UseWolverine(opts =&gt;
+    {
+        // There'd obviously be a LOT more set up and service registrations
+        // to be a real application
+        
+        opts.LocalQueueFor&lt;PaymentValidated&gt;().Sequential();
+        opts.LocalQueueFor&lt;PostPaymentSchedule&gt;().Sequential();
+    }).RunOaktonCommands(args);
+
+</pre></div>
+
+
+<p>And just like that, we&#8217;ve got a producer/consumer system that is able to communicate through local queues with Wolverine. From the <code>dotnet run -- describe</code> diagnostics for this application, you can see the listeners:</p>
+
+
+<div class="wp-block-syntaxhighlighter-code "><pre class="brush: plain; title: ; notranslate">
+┌────────────────────────┬────────────────────────┬──────────────────┬────────────────────────┬────────────────────────┐
+│ Uri                    │ Name                   │ Mode             │ Execution              │ Serializers            │
+├────────────────────────┼────────────────────────┼──────────────────┼────────────────────────┼────────────────────────┤
+│ local://default/       │ default                │ BufferedInMemory │ MaxDegreeOfParallelism │ NewtonsoftSerializer   │
+│                        │                        │                  │ : 16, EnsureOrdered:   │ (application/json)     │
+│                        │                        │                  │ False                  │                        │
+│ local://durable/       │ durable                │ Durable          │ MaxDegreeOfParallelism │ NewtonsoftSerializer   │
+│                        │                        │                  │ : 16, EnsureOrdered:   │ (application/json)     │
+│                        │                        │                  │ False                  │                        │
+│ local://replies/       │ replies                │ BufferedInMemory │ MaxDegreeOfParallelism │ NewtonsoftSerializer   │
+│                        │                        │                  │ : 16, EnsureOrdered:   │ (application/json)     │
+│                        │                        │                  │ False                  │                        │
+│ local://wolverineinges │ wolverineingestionserv │ BufferedInMemory │ MaxDegreeOfParallelism │ NewtonsoftSerializer   │
+│ tionservice.filedetect │ ice.filedetected       │                  │ : 16, EnsureOrdered:   │ (application/json)     │
+│ ed/                    │                        │                  │ False                  │                        │
+│ local://wolverineinges │ wolverineingestionserv │ BufferedInMemory │ MaxDegreeOfParallelism │ NewtonsoftSerializer   │
+│ tionservice.paymentval │ ice.paymentvalidated   │                  │ : 1, EnsureOrdered:    │ (application/json)     │
+│ idated/                │                        │                  │ True                   │                        │
+│ local://wolverineinges │ wolverineingestionserv │ BufferedInMemory │ MaxDegreeOfParallelism │ NewtonsoftSerializer   │
+│ tionservice.postpaymen │ ice.postpaymentschedul │                  │ : 1, EnsureOrdered:    │ (application/json)     │
+│ tschedule/             │ e                      │                  │ True                   │                        │
+│ local://wolverineinges │ wolverineingestionserv │ BufferedInMemory │ MaxDegreeOfParallelism │ NewtonsoftSerializer   │
+│ tionservice.schedulepa │ ice.schedulepayment    │                  │ : 16, EnsureOrdered:   │ (application/json)     │
+│ yment/                 │                        │                  │ False                  │                        │
+└────────────────────────┴────────────────────────┴──────────────────┴────────────────────────┴────────────────────────┘
+
+</pre></div>
+
+
+<p>and the message routing:</p>
+
+
+<div class="wp-block-syntaxhighlighter-code "><pre class="brush: plain; title: ; notranslate">
+┌───────────────────────────────────────────────┬────────────────────────────────────────────────────────┬──────────────────┐
+│ Message Type                                  │ Destination                                            │ Content Type     │
+├───────────────────────────────────────────────┼────────────────────────────────────────────────────────┼──────────────────┤
+│ WolverineIngestionService.FileDetected        │ local://wolverineingestionservice.filedetected/        │ application/json │
+│ WolverineIngestionService.PaymentValidated    │ local://wolverineingestionservice.paymentvalidated/    │ application/json │
+│ WolverineIngestionService.PostPaymentSchedule │ local://wolverineingestionservice.postpaymentschedule/ │ application/json │
+│ WolverineIngestionService.SchedulePayment     │ local://wolverineingestionservice.schedulepayment/     │ application/json │
+└───────────────────────────────────────────────┴────────────────────────────────────────────────────────┴──────────────────┘
+
+</pre></div>
+
+
+<h2 class="wp-block-heading">Summary and next time&#8230;</h2>
+
+
+
+<p>So far, most folks seem to be considering Wolverine as an in process mediator tool or less frequently as an asynchronous messaging tool between processes. However, Wolverine also has a strong model for asynchronous processing through its local queueing model. It&#8217;s not shown in this post, but the command/event/message handling is fully instrumented with logging, Open Telemetry tracing, and all of Wolverine&#8217;s error handling capabilities.</p>
+
+
+
+<p>Next time out, I&#8217;m going to use this same system to demonstrate some of Wolverine&#8217;s resiliency features that were absolutely inspired by my experiences building and supporting the system this post is based on.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://jeremydmiller.com/2023/02/27/producer-consumer-pattern-with-wolverine/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+		
+		<media:content url="https://2.gravatar.com/avatar/83a17261fd4c9f537e63165df6ba57bb?s=96&#38;d=identicon&#38;r=G" medium="image">
+			<media:title type="html">jeremydmiller</media:title>
+		</media:content>
+
+		<media:content url="https://jeremydmiller.files.wordpress.com/2022/12/wolverine_banner.png?w=1024" medium="image" />
+
+		<media:content url="https://jeremydmiller.files.wordpress.com/2023/02/image-1.png?w=808" medium="image" />
+	</item>
+		<item>
+		<title>Command Line Diagnostics in Wolverine</title>
+		<link>https://jeremydmiller.com/2023/02/23/command-line-diagnostics-in-wolverine/</link>
+					<comments>https://jeremydmiller.com/2023/02/23/command-line-diagnostics-in-wolverine/#respond</comments>
+		
+		<dc:creator><![CDATA[jeremydmiller]]></dc:creator>
+		<pubDate>Thu, 23 Feb 2023 18:40:59 +0000</pubDate>
+				<category><![CDATA[.Net]]></category>
+		<category><![CDATA[oakton]]></category>
+		<category><![CDATA[Wolverine]]></category>
+		<guid isPermaLink="false">http://jeremydmiller.com/?p=10476</guid>
+
+					<description><![CDATA[Wolverine 0.9.12 just went up on Nuget with new bug fixes, documentation improvements, improved Rabbit MQ usage of topics, local queue usage, and a lot of new functionality around the command line diagnostics. See the whole release notes here. In this post, I want to zero into &#8220;command line diagnostics.&#8221; Speaking from a mix of &#8230; <a href="https://jeremydmiller.com/2023/02/23/command-line-diagnostics-in-wolverine/" class="more-link">Continue reading <span class="screen-reader-text">Command Line Diagnostics in&#160;Wolverine</span> <span class="meta-nav">&#8594;</span></a>]]></description>
+										<content:encoded><![CDATA[
+<figure class="wp-block-image size-large"><a href="https://jeremydmiller.files.wordpress.com/2022/12/wolverine_banner.png"><img data-attachment-id="10293" data-permalink="https://jeremydmiller.com/2022/12/28/my-oss-plans-for-2023/wolverine_banner/" data-orig-file="https://jeremydmiller.files.wordpress.com/2022/12/wolverine_banner.png" data-orig-size="1072,482" data-comments-opened="1" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;}" data-image-title="wolverine_banner" data-image-description="" data-image-caption="" data-medium-file="https://jeremydmiller.files.wordpress.com/2022/12/wolverine_banner.png?w=300" data-large-file="https://jeremydmiller.files.wordpress.com/2022/12/wolverine_banner.png?w=1024" src="https://jeremydmiller.files.wordpress.com/2022/12/wolverine_banner.png?w=1024" alt="" class="wp-image-10293" srcset="https://jeremydmiller.files.wordpress.com/2022/12/wolverine_banner.png?w=1024 1024w, https://jeremydmiller.files.wordpress.com/2022/12/wolverine_banner.png?w=150 150w, https://jeremydmiller.files.wordpress.com/2022/12/wolverine_banner.png?w=300 300w, https://jeremydmiller.files.wordpress.com/2022/12/wolverine_banner.png?w=768 768w, https://jeremydmiller.files.wordpress.com/2022/12/wolverine_banner.png 1072w" sizes="(max-width: 1024px) 100vw, 1024px" /></a></figure>
+
+
+
+<p><a href="http://wolverinefx.net">Wolverine</a> 0.9.12 just went up on Nuget with new bug fixes, documentation improvements, improved Rabbit MQ usage of topics, local queue usage, and a lot of new functionality around the command line diagnostics. See the <a href="https://github.com/JasperFx/wolverine/releases/tag/0.9.12">whole release notes here</a>. </p>
+
+
+
+<p>In this post, I want to zero into &#8220;command line diagnostics.&#8221; Speaking from a mix of concerns about being both a user of Wolverine and one of the people needing to support other people using Wolverine online, here&#8217;s a not exhaustive list of real challenges I&#8217;ve already seen or anticipate as Wolverine gets out into the wild more in the near future:</p>
+
+
+
+<ul>
+<li>How is Wolverine configured? What extensions are found? </li>
+
+
+
+<li>What middleware is registered, and is it hooked up correctly?</li>
+
+
+
+<li>How is Wolverine handling a specific message exactly?</li>
+
+
+
+<li>How is Wolverine HTTP handling an HTTP request for a specific route?</li>
+
+
+
+<li>Is Wolverine finding all the handlers? Where is it looking?</li>
+
+
+
+<li>Where is Wolverine trying to send each message?</li>
+
+
+
+<li>Are we missing any configuration items? Is the database reachable? Is the url for a web service proxy in our application valid?</li>
+
+
+
+<li>When Wolverine has to interact with databases or message brokers, are those servers configured correctly to run the application?</li>
+</ul>
+
+
+
+<p>That&#8217;s a big list of potentially scary issues, so let&#8217;s run down a list of<a href="https://wolverine.netlify.app/guide/command-line.html"> command line diagnostic</a> tools that come out of the box with Wolverine to help developers be more productive in real world development. First off, Wolverine&#8217;s command line support is all through the <a href="https://jasperfx.github.io/oakton">Oakton</a> library, and you&#8217;ll want to enable Oakton command handling directly in your main application through this line of code at the very end of a typical <code>Program</code> file:</p>
+
+
+<div class="wp-block-syntaxhighlighter-code "><pre class="brush: csharp; title: ; notranslate">
+// This is an extension method within Oakton
+// And it's important to relay the exit code
+// from Oakton commands to the command line
+// if you want to use these tools in CI or CD
+// pipelines to denote success or failure
+return await app.RunOaktonCommands(args);
+</pre></div>
+
+
+<p>You&#8217;ll know Oakton is configured correctly if you&#8217;ll just go to the command line terminal of your preference at the root of your project and type:</p>
+
+
+<div class="wp-block-syntaxhighlighter-code "><pre class="brush: bash; title: ; notranslate">
+dotnet run -- help
+</pre></div>
+
+
+<p>In a simple Wolverine application, you&#8217;d get these options out of the box:</p>
+
+
+<div class="wp-block-syntaxhighlighter-code "><pre class="brush: bash; title: ; notranslate">
+The available commands are:
+                                                                                                    
+  Alias       Description                                                                           
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  check-env   Execute all environment checks against the application                                
+  codegen     Utilities for working with JasperFx.CodeGeneration and JasperFx.RuntimeCompiler       
+  describe    Writes out a description of your running application to either the console or a file  
+  help        List all the available commands                                                       
+  resources   Check, setup, or teardown stateful resources of this system                           
+  run         Start and run this .Net application                                                   
+  storage     Administer the Wolverine message storage                                                       
+                                                                                                    
+
+Use dotnet run -- ? &#91;command name] or dotnet run -- help &#91;command name] to see usage help about a specific command
+</pre></div>
+
+
+<p>Let me admit that there&#8217;s a little bit of &#8220;magic&#8221; in the way that Wolverine uses naming or type conventions to &#8220;know&#8221; how to call into your application code. It&#8217;s great (in my opinion) that Wolverine doesn&#8217;t force you to pollute your code with framework concerns or require you to shape your code around Wolverine&#8217;s APIs the way most other .NET frameworks do.</p>
+
+
+
+<p>Cool, so let&#8217;s move on to&#8230;</p>
+
+
+
+<h2 class="wp-block-heading">Describe the Configured Application</h2>
+
+
+
+<p><em>The annoying &#8211;framework flag is only necessary if your application targets multiple .NET frameworks, but no sane person would ever do that for a real application.</em></p>
+
+
+
+<p>Partially for my own sanity, there&#8217;s a lot more support for Wolverine in the <code>describe</code> command. To see this in usage, consider the <a href="https://github.com/JasperFx/wolverine/tree/main/src/Samples/Diagnostics/DiagnosticsApp">sample DiagnosticsApp from the Wolverine codebase</a>. If I use the <code>dotnet run --framework net7.0 -- describe</code> command from that project, I get this <a href="https://gist.github.com/jeremydmiller/8aba13481f7da32f391cf988852222b8">copious textual output</a>.</p>
+
+
+
+<p>Just to summarize, what you&#8217;ll see in the command line report is:</p>
+
+
+
+<ul>
+<li>&#8220;Wolverine Options&#8221; &#8211; the basics properties as configured, including what Wolverine thinks is the application assembly and any registered extensions</li>
+
+
+
+<li>&#8220;Wolverine Listeners&#8221; &#8211; a tabular list of all the configured listening endpoints, including local queues, within the system and information about how they are configured</li>
+
+
+
+<li>&#8220;Wolverine Message Routing&#8221; &#8211; a tabular list of all the message routing for&nbsp;<em>known</em>&nbsp;messages published within the system</li>
+
+
+
+<li>&#8220;Wolverine Sending Endpoints&#8221; &#8211; a tabular list of all&nbsp;<em>known</em>, configured endpoints that send messages externally</li>
+
+
+
+<li>&#8220;Wolverine Error Handling&#8221; &#8211; a preview of the active message failure policies active within the system</li>
+
+
+
+<li>&#8220;Wolverine Http Endpoints&#8221; &#8211; shows all Wolverine HTTP endpoints. This is only active if WolverineFx.HTTP is used within the system</li>
+</ul>
+
+
+
+<p>The latest Wolverine did add some <a href="https://wolverine.netlify.app/guide/messages.html#message-discovery">optional message type discovery functionality</a> specifically to make this <code>describe</code> command be more usable by letting Wolverine know about more message types that will be sent at runtime, but cannot be easily recognized as such strictly from configuration using a mix of marker interface types and/or attributes:</p>
+
+
+
+<pre class="wp-block-preformatted"><em>// These are all published messages that aren't<br></em><em>// obvious to Wolverine from message handler endpoint<br></em><em>// signatures<br></em>public record InvoiceShipped<strong>(</strong>Guid Id<strong>) </strong>: IEvent<strong>;<br></strong>public record CreateShippingLabel<strong>(</strong>Guid Id<strong>) </strong>: ICommand<strong>;<br></strong><strong><br></strong><strong>[</strong>WolverineMessage<strong>]<br></strong>public record AddItem<strong>(</strong>Guid Id<strong>, </strong>string ItemName<strong>);</strong></pre>
+
+
+
+<h2 class="wp-block-heading">Environment Checks</h2>
+
+
+
+<p>Have you ever made a deployment to production just to find out that a database connection string was wrong? Or the credentials to a message broker were wrong? Or your service wasn&#8217;t running under an account that had read access to a file share your application needed to scan? Me too!</p>
+
+
+
+<p>Wolverine adds several environment checks so that you can use <a href="https://jeremydmiller.com/2019/10/01/environment-checks-and-better-command-line-abilities-for-your-net-core-application/">Oakton&#8217;s Environment Check</a> functionality to self-diagnose potential configuration issues with:</p>
+
+
+<div class="wp-block-syntaxhighlighter-code "><pre class="brush: bash; title: ; notranslate">
+dotnet run -- check-env
+</pre></div>
+
+
+<p>You could conceivably use this as part of your continuous delivery pipeline to quickly verify the application configuration for an application and fail fast &amp; roll back if the checks fail.</p>
+
+
+
+<p></p>
+
+
+
+<h2 class="wp-block-heading">How is Wolverine calling my message handlers?!?</h2>
+
+
+
+<p>Wolverine admittedly involves some &#8220;magic&#8221; about how it calls into your message handlers, and it&#8217;s not unlikely you may be confused about whether or how some kind of registered middleware is working within your system. Or maybe you&#8217;re just mildly curious about how Wolverine works at all. </p>
+
+
+
+<p>To that end, you can preview &#8212; or just generate ahead of time for better &#8220;cold starts&#8221; &#8212; the dynamic source code that Wolverine generates for your message handlers or HTTP handlers with:</p>
+
+
+<div class="wp-block-syntaxhighlighter-code "><pre class="brush: bash; title: ; notranslate">
+dotnet run -- codegen preview
+</pre></div>
+
+
+<p>Or just write the code to the file system so you can look at it to your heart&#8217;s content with your IDE with:</p>
+
+
+<div class="wp-block-syntaxhighlighter-code "><pre class="brush: bash; title: ; notranslate">
+dotnet run -- codegen write
+</pre></div>
+
+
+<p>Which should write the source code files to /Internal/Generated/WolverineHandlers. Here&#8217;s a sample from the same diagnostics app sample:</p>
+
+
+<div class="wp-block-syntaxhighlighter-code "><pre class="brush: csharp; title: ; notranslate">
+// &lt;auto-generated/&gt;
+#pragma warning disable
+
+namespace Internal.Generated.WolverineHandlers
+{
+    public class CreateInvoiceHandler360502188 : Wolverine.Runtime.Handlers.MessageHandler
+    {
+
+
+        public override System.Threading.Tasks.Task HandleAsync(Wolverine.Runtime.MessageContext context, System.Threading.CancellationToken cancellation)
+        {
+            var createInvoice = (IntegrationTests.CreateInvoice)context.Envelope.Message;
+            var outgoing1 = IntegrationTests.CreateInvoiceHandler.Handle(createInvoice);
+            // Outgoing, cascaded message
+            return context.EnqueueCascadingAsync(outgoing1);
+
+        }
+
+    }
+}
+</pre></div>
+
+
+<h2 class="wp-block-heading">Database or Message Broker Setup</h2>
+
+
+
+<p>Your application will require some configuration of external resources if you&#8217;re using any mix of Wolverine&#8217;s transactional inbox/outbox support which targets Postgresql or Sql Server or message brokers like Rabbit MQ, Amazon SQS, or Azure Service Bus. Not to worry (too much), Wolverine exposes some command line support for making any necessary configuration setup in these resources with the Oakton <code>resources</code> command.</p>
+
+
+
+<p>In the diagnostics app, we could ensure that our connected Postgresql database has all the necessary schema tables and the Rabbit MQ broker has all the necessary queues, exchanges, and bindings that out application needs to function with:</p>
+
+
+<div class="wp-block-syntaxhighlighter-code "><pre class="brush: bash; title: ; notranslate">
+dotnet run -- resources setup
+</pre></div>
+
+
+<p>In testing or normal development work, I may also want to reset the state of these resources to delete now obsolete messages in either the database or the Rabbit MQ queues, and we can fortunately do that with:</p>
+
+
+<div class="wp-block-syntaxhighlighter-code "><pre class="brush: bash; title: ; notranslate">
+dotnet run -- resources clear
+</pre></div>
+
+
+<p>There are also resource options for:</p>
+
+
+
+<ul>
+<li><code>teardown</code> &#8212; remove all the database objects or message broker objects that the Wolverine application placed there</li>
+
+
+
+<li><code>statistics</code> &#8212; glean some information about the number of records or messages in the stateful resources</li>
+
+
+
+<li><code>check</code> &#8212; do environment checks on the configuration of the stateful resources. This is purely a diagnostic function</li>
+
+
+
+<li><code>list</code> &#8212; just show you information about the known, stateful resources</li>
+</ul>
+
+
+
+<p></p>
+
+
+
+<p></p>
+
+
+
+<h2 class="wp-block-heading">Summary</h2>
+
+
+
+<p>Is any of this wall of textual reports being spit out at the command line sexy? Not in the slightest. Will this functionality help development teams be more productive with Wolverine? Will this functionality help myself and other Wolverine team members support remote users in the future? I&#8217;m hopeful that the answer to the first question is &#8220;yes&#8221; and pretty confident that it&#8217;s a &#8220;hell, yes&#8221; to the second question. </p>
+
+
+
+<p>I would also hope that folks see this functionality and agree with my assessment that Wolverine (and Marten) are absolutely appropriate for real life usage and well beyond the toy project phase.</p>
+
+
+
+<p>Anyway, more on Wolverine next week starting with an exploration of Wolverine&#8217;s local queuing support for asynchronous processing. </p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://jeremydmiller.com/2023/02/23/command-line-diagnostics-in-wolverine/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+		
+		<media:content url="https://2.gravatar.com/avatar/83a17261fd4c9f537e63165df6ba57bb?s=96&#38;d=identicon&#38;r=G" medium="image">
+			<media:title type="html">jeremydmiller</media:title>
+		</media:content>
+
+		<media:content url="https://jeremydmiller.files.wordpress.com/2022/12/wolverine_banner.png?w=1024" medium="image" />
+	</item>
+		<item>
+		<title>Wolverine&#8217;s New HTTP Endpoint Model</title>
+		<link>https://jeremydmiller.com/2023/02/14/wolverines-new-http-endpoint-model/</link>
+					<comments>https://jeremydmiller.com/2023/02/14/wolverines-new-http-endpoint-model/#comments</comments>
+		
+		<dc:creator><![CDATA[jeremydmiller]]></dc:creator>
+		<pubDate>Tue, 14 Feb 2023 19:26:43 +0000</pubDate>
+				<category><![CDATA[Uncategorized]]></category>
+		<category><![CDATA[.Net]]></category>
+		<category><![CDATA[Marten]]></category>
+		<category><![CDATA[Wolverine]]></category>
+		<guid isPermaLink="false">http://jeremydmiller.com/?p=10451</guid>
+
+					<description><![CDATA[UPDATE: If you pull down the sample code, it&#8217;s not quite working with Swashbuckle yet. It *does* publish the metadata and the actual endpoints work, but it&#8217;s not showing up in the OpenAPI spec. Always something. I just published Wolverine 0.9.10 to Nuget (after a much bigger 0.9.9 yesterday). There&#8217;s several bug fixes, some admitted &#8230; <a href="https://jeremydmiller.com/2023/02/14/wolverines-new-http-endpoint-model/" class="more-link">Continue reading <span class="screen-reader-text">Wolverine&#8217;s New HTTP Endpoint&#160;Model</span> <span class="meta-nav">&#8594;</span></a>]]></description>
+										<content:encoded><![CDATA[
+<figure class="wp-block-image size-large"><a href="https://jeremydmiller.files.wordpress.com/2022/12/wolverine_banner.png"><img data-attachment-id="10293" data-permalink="https://jeremydmiller.com/2022/12/28/my-oss-plans-for-2023/wolverine_banner/" data-orig-file="https://jeremydmiller.files.wordpress.com/2022/12/wolverine_banner.png" data-orig-size="1072,482" data-comments-opened="1" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;}" data-image-title="wolverine_banner" data-image-description="" data-image-caption="" data-medium-file="https://jeremydmiller.files.wordpress.com/2022/12/wolverine_banner.png?w=300" data-large-file="https://jeremydmiller.files.wordpress.com/2022/12/wolverine_banner.png?w=1024" src="https://jeremydmiller.files.wordpress.com/2022/12/wolverine_banner.png?w=1024" alt="" class="wp-image-10293" srcset="https://jeremydmiller.files.wordpress.com/2022/12/wolverine_banner.png?w=1024 1024w, https://jeremydmiller.files.wordpress.com/2022/12/wolverine_banner.png?w=150 150w, https://jeremydmiller.files.wordpress.com/2022/12/wolverine_banner.png?w=300 300w, https://jeremydmiller.files.wordpress.com/2022/12/wolverine_banner.png?w=768 768w, https://jeremydmiller.files.wordpress.com/2022/12/wolverine_banner.png 1072w" sizes="(max-width: 1024px) 100vw, 1024px" /></a></figure>
+
+
+
+<p>UPDATE: <strong>If you pull down the sample code, it&#8217;s not quite working with Swashbuckle yet. It *does* publish the metadata and the actual endpoints work, but it&#8217;s not showing up in the OpenAPI spec. Always something.</strong></p>
+
+
+
+<p>I just published <a href="https://wolverine.netlify.app">Wolverine</a> 0.9.10 to Nuget (after a much bigger 0.9.9 yesterday). There&#8217;s several bug fixes, some admitted breaking changes to advanced configuration items, and one significant change to the &#8220;mediator&#8221; behavior that&#8217;s described at the section at the very bottom of this post. </p>
+
+
+
+<p>The big addition is a new library that enables Wolverine&#8217;s runtime model directly for HTTP endpoints in ASP.Net Core services without having to jump through the typical sequence of delegating directly from a Minimal API method directly to Wolverine&#8217;s mediator functionality like this:</p>
+
+
+<div class="wp-block-syntaxhighlighter-code "><pre class="brush: csharp; title: ; notranslate">
+app.MapPost(&quot;/items/create&quot;, (CreateItemCommand cmd, IMessageBus bus) =&gt; bus.InvokeAsync(cmd));
+
+app.MapPost(&quot;/items/create2&quot;, (CreateItemCommand cmd, IMessageBus bus) =&gt; bus.InvokeAsync&lt;ItemCreated&gt;(cmd));
+</pre></div>
+
+
+<p>Instead, Wolverine now has the <code>WolverineFx.Http</code> library to directly use Wolverine&#8217;s runtime model &#8212; including its unique middleware approach &#8212; directly from HTTP endpoints. </p>
+
+
+
+<p>Shamelessly stealing the <a href="https://learn.microsoft.com/en-us/aspnet/core/tutorials/min-web-api?view=aspnetcore-7.0&amp;tabs=visual-studio">Todo sample application from the Minimal API documentation</a>, let&#8217;s build a <a href="https://github.com/JasperFx/wolverine/blob/main/src/Samples/TodoWebService/TodoWebService">similar service with WolverineFx.Http</a>, but I&#8217;m also going to switch to <a href="https://martendb.io">Marten</a> for persistence just out of personal preference.</p>
+
+
+
+<p>To bootstrap the application, I used the <code>dotnet new webapi</code> model, then added the <code>WolverineFx.Marten</code> and <code>WolverineFx.HTTP</code> nugets. The application bootstrapping for basic integration of Wolverine, Marten, and the new Wolverine HTTP model becomes:</p>
+
+
+<div class="wp-block-syntaxhighlighter-code "><pre class="brush: csharp; title: ; notranslate">
+using Marten;
+using Oakton;
+using Wolverine;
+using Wolverine.Http;
+using Wolverine.Marten;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// Adding Marten for persistence
+builder.Services.AddMarten(opts =&gt;
+    {
+        opts.Connection(builder.Configuration.GetConnectionString(&quot;Marten&quot;));
+        opts.DatabaseSchemaName = &quot;todo&quot;;
+    })
+    .IntegrateWithWolverine()
+    .ApplyAllDatabaseChangesOnStartup();
+
+// Wolverine usage is required for WolverineFx.Http
+builder.Host.UseWolverine(opts =&gt;
+{
+    // This middleware will apply to the HTTP
+    // endpoints as well
+    opts.Policies.AutoApplyTransactions();
+    
+    // Setting up the outbox on all locally handled
+    // background tasks
+    opts.Policies.UseDurableLocalQueues();
+});
+
+// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+var app = builder.Build();
+
+// Configure the HTTP request pipeline.
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
+// Let's add in Wolverine HTTP endpoints to the routing tree
+app.MapWolverineEndpoints();
+
+return await app.RunOaktonCommands(args);
+</pre></div>
+
+
+<p>Do note that the only thing in that sample that pertains to&nbsp;<code>WolverineFx.Http</code>&nbsp;itself is the call to&nbsp;<code>IEndpointRouteBuilder.MapWolverineEndpoints()</code>.</p>
+
+
+
+<p>Let&#8217;s move on to &#8220;Hello, World&#8221; with a new Wolverine http endpoint from this class we&#8217;ll add to the sample project:</p>
+
+
+<div class="wp-block-syntaxhighlighter-code "><pre class="brush: csharp; title: ; notranslate">
+public class HelloEndpoint
+{
+    &#91;WolverineGet(&quot;/&quot;)]
+    public string Get() =&gt; &quot;Hello.&quot;;
+}
+</pre></div>
+
+
+<p>At application startup, WolverineFx.Http will find the&nbsp;<code>HelloEndpoint.Get()</code>&nbsp;method and treat it as a Wolverine http endpoint with the route pattern&nbsp;<code>GET: /</code>&nbsp;specified in the&nbsp;<code>[WolverineGet]</code>&nbsp;attribute.</p>
+
+
+
+<p>As you&#8217;d expect, that route will write the return value back to the HTTP response and behave as specified by this&nbsp;<a rel="noreferrer noopener" href="https://jasperfx.github.io/alba" target="_blank">Alba</a>&nbsp;specification:</p>
+
+
+<div class="wp-block-syntaxhighlighter-code "><pre class="brush: csharp; title: ; notranslate">
+&#91;Fact]
+public async Task hello_world()
+{
+    var result = await _host.Scenario(x =&gt;
+    {
+        x.Get.Url(&quot;/&quot;);
+        x.Header(&quot;content-type&quot;).SingleValueShouldEqual(&quot;text/plain&quot;);
+    });
+    
+    result.ReadAsText().ShouldBe(&quot;Hello.&quot;);
+}
+</pre></div>
+
+
+<p>Moving on to the actual&nbsp;<code>Todo</code>&nbsp;problem domain, let&#8217;s assume we&#8217;ve got a class like this:</p>
+
+
+<div class="wp-block-syntaxhighlighter-code "><pre class="brush: csharp; title: ; notranslate">
+public class Todo
+{
+    public int Id { get; set; }
+    public string? Name { get; set; }
+    public bool IsComplete { get; set; }
+}
+</pre></div>
+
+
+<p>In a sample class called&nbsp;<a rel="noreferrer noopener" href="https://github.com/JasperFx/wolverine/blob/main/src/Samples/TodoWebService/TodoWebService/Endpoints.cs" target="_blank">TodoEndpoints</a>&nbsp;let&#8217;s add an HTTP service endpoint for listing all the known&nbsp;<code>Todo</code>&nbsp;documents:</p>
+
+
+<div class="wp-block-syntaxhighlighter-code "><pre class="brush: csharp; title: ; notranslate">
+&#91;WolverineGet(&quot;/todoitems&quot;)]
+public static Task&lt;IReadOnlyList&lt;Todo&gt;&gt; Get(IQuerySession session) 
+    =&gt; session.Query&lt;Todo&gt;().ToListAsync();
+</pre></div>
+
+
+<p>As you&#8217;d guess, this method will serialize all the known&nbsp;<code>Todo</code>&nbsp;documents from the database into the HTTP response and return a 200 status code. In this particular case the code is a little bit noisier than the Minimal API equivalent, but that&#8217;s okay, because you can happily use Minimal API and WolverineFx.Http together in the same project. WolverineFx.Http, however, will shine in more complicated endpoints.</p>
+
+
+
+<p>Consider this endpoint just to return the data for a single&nbsp;<code>Todo</code>&nbsp;document:</p>
+
+
+<div class="wp-block-syntaxhighlighter-code "><pre class="brush: csharp; title: ; notranslate">
+// Wolverine can infer the 200/404 status codes for you here
+// so there's no code noise just to satisfy OpenAPI tooling
+&#91;WolverineGet(&quot;/todoitems/{id}&quot;)]
+public static Task&lt;Todo?&gt; GetTodo(int id, IQuerySession session, CancellationToken cancellation) 
+    =&gt; session.LoadAsync&lt;Todo&gt;(id, cancellation);
+</pre></div>
+
+
+<p>At this point it&#8217;s effectively de rigueur for any web service to support&nbsp;<a href="https://www.openapis.org/" target="_blank" rel="noreferrer noopener">OpenAPI</a>&nbsp;documentation directly in the service. Fortunately, WolverineFx.Http is able to glean most of the necessary metadata to support OpenAPI documentation with&nbsp;<a href="https://github.com/domaindrivendev/Swashbuckle.AspNetCore" target="_blank" rel="noreferrer noopener">Swashbuckle</a>&nbsp;from the method signature up above. The method up above will also cleanly set a status code of 404 if the requested&nbsp;<code>Todo</code>&nbsp;document does not exist.</p>
+
+
+
+<p>Now, the bread and butter for WolverineFx.Http is using it in conjunction with Wolverine itself. In this sample, let&#8217;s create a new&nbsp;<code>Todo</code>&nbsp;based on submitted data, but also publish a new event message with Wolverine to do some background processing after the HTTP call succeeds. And, oh, yeah, let&#8217;s make sure this endpoint is actively using Wolverine&#8217;s&nbsp;<a href="https://wolverine.netlify.app/guide/durability/">transactional outbox</a>&nbsp;support for consistency:</p>
+
+
+<div class="wp-block-syntaxhighlighter-code "><pre class="brush: csharp; title: ; notranslate">
+&#91;WolverinePost(&quot;/todoitems&quot;)]
+public static async Task&lt;IResult&gt; Create(CreateTodo command, IDocumentSession session, IMessageBus bus)
+{
+    var todo = new Todo { Name = command.Name };
+    session.Store(todo);
+
+    // Going to raise an event within out system to be processed later
+    await bus.PublishAsync(new TodoCreated(todo.Id));
+    
+    return Results.Created($&quot;/todoitems/{todo.Id}&quot;, todo);
+}
+</pre></div>
+
+
+<p>The endpoint code above is automatically enrolled in the Marten transactional middleware by simple virtue of having a dependency on Marten&#8217;s&nbsp;<code>IDocumentSession</code>. By also taking in the&nbsp;<code>IMessageBus</code>&nbsp;dependency, WolverineFx.Http is wrapping the transactional outbox behavior around the method so that the&nbsp;<code>TodoCreated</code>&nbsp;message is only sent after the database transaction succeeds.</p>
+
+
+
+<p>Lastly for this page, consider the need to update a&nbsp;<code>Todo</code>&nbsp;from a&nbsp;<code>PUT</code>&nbsp;call. Your HTTP endpoint may vary its handling and response by whether or not the document actually exists. Just to show off Wolverine&#8217;s &#8220;composite handler&#8221; functionality and also how WolverineFx.Http supports middleware, consider this more complex endpoint:</p>
+
+
+<div class="wp-block-syntaxhighlighter-code "><pre class="brush: csharp; title: ; notranslate">
+public static class UpdateTodoEndpoint
+{
+    public static async Task&lt;(Todo? todo, IResult result)&gt; LoadAsync(UpdateTodo command, IDocumentSession session)
+    {
+        var todo = await session.LoadAsync&lt;Todo&gt;(command.Id);
+        return todo != null 
+            ? (todo, new WolverineContinue()) 
+            : (todo, Results.NotFound());
+    }
+
+    &#91;WolverinePut(&quot;/todoitems&quot;)]
+    public static void Put(UpdateTodo command, Todo todo, IDocumentSession session)
+    {
+        todo.Name = todo.Name;
+        todo.IsComplete = todo.IsComplete;
+        session.Store(todo);
+    }
+}
+</pre></div>
+
+
+<p>In the WolverineFx.Http model, any bit of middleware that returns an <code>IResult</code> object is tested by the generated code to execute any <code>IResult</code> object returned from middleware that is not the built in <code>WolverineContinue</code> type and stop all further processing. This is intended to enable validation or authorization type middleware where you may need to filter calls to the inner HTTP handler.</p>
+
+
+
+<p>With the sample application out of the way, here&#8217;s a rundown of the significant things about this library:</p>
+
+
+
+<ul>
+<li>It&#8217;s actually a pretty small library in the greater scheme of things and all it really does is connect ASP.Net Core&#8217;s endpoint routing to the Wolverine runtime model &#8212; and Wolverine&#8217;s runtime model is likely going to be somewhat more efficient than Minimal API and much more efficient that MVC Core</li>
+
+
+
+<li>It can be happily combined with Minimal API, MVC Core, or any other ASP.Net Core model that exploits endpoint routing, even within the same application</li>
+
+
+
+<li>Wolverine is allowing you to use the Minimal API IResult model </li>
+
+
+
+<li>The JSON serialization is strictly System.Text.Json and uses the same options as Minimal API within an ASP.Net Core application</li>
+
+
+
+<li>It&#8217;s possible to use Wolverine middleware strategy with the HTTP endpoints</li>
+
+
+
+<li>Wolverine is trying to glean necessary metadata from the method signatures to feed OpenAPI usage within ASP.Net Core without developers having to jump through hoops adding attributes or goofy <code>TypedResult</code> noise code just for Swashbuckle</li>
+
+
+
+<li>This model plays nicely with Wolverine&#8217;s transactional outbox model for common cases where you need to both make database changes and publish additional messages for background processing in the same HTTP call. That&#8217;s a bit of important functionality that I feel is missing or is clumsy at best in many leading .NET server side technologies.</li>
+</ul>
+
+
+
+<p>For the handful of you reading this that still remember FubuMVC, Wolverine&#8217;s HTTP model retains some of FubuMVC&#8217;s old strengths in terms of still not ramming framework concerns into your application code, but learned some hard lessons from FubuMVC&#8217;s ultimate failure:</p>
+
+
+
+<ul>
+<li>FubuMVC was an ambitious, sprawling framework that was trying to be its own ecosystem with its own bootstrapping model, logging abstractions, and even IoC abstractions. WolverineFx.Http is just a citizen within the greater ASP.Net Core ecosystem and uses common .NET abstractions, concepts, and idiomatic naming conventions at every possible turn</li>
+
+
+
+<li>FubuMVC relied too much on conventions, which was great when the convention was exactly what you needed, and kinda hurtful when you needed something besides the exact conventions. Not to worry, WolverineFx.Http let&#8217;s you drop right down to the <code>HttpContext</code> level at will or use any of the <code>IResult</code> objects in existing ASP.Net Core whenever the Wolverine conventions don&#8217;t fit.</li>
+
+
+
+<li>FubuMVC could technically be used with old ASP.Net MVC, but it was a Frankenstein&#8217;s monster to pull off. Wolverine can be mixed and matched at will with either Minimal API, MVC Core, or even other OSS projects that exploit ASP.Net Core endpoint routing.</li>
+
+
+
+<li>Wolverine is trying to play nicely in terms of OpenAPI metadata and security related metadata for usage of standard ASP.Net Core middleware like the authorization or authentication middleware</li>
+
+
+
+<li>FubuMVC&#8217;s &#8220;Behavior&#8221; model gave you a very powerful &#8220;Russian Doll&#8221; middleware ability that was maximally flexible &#8212; and also maximally inefficient in runtime. Wolverine&#8217;s runtime model takes a very different approach to still allow for the &#8220;Russian Doll&#8221; flexibility, but to do so in a way that is more efficient at runtime than basically every  other commonly used framework today in the .NET community. </li>
+
+
+
+<li>When things went boom in FubuMVC, you got monumentally huge stack traces that could overwhelm developers who hadn&#8217;t had a week&#8217;s worth of good night sleeps. It sounds minor, but Wolverine is valuable in the sense that the stack traces from HTTP (or message handler) failures will have very minimal Wolverine related framework noise in the stack trace for easier readability by developers.</li>
+</ul>
+
+
+
+<h2 class="wp-block-heading">Big Change to In Memory Mediator Model</h2>
+
+
+
+<p>I&#8217;ve been caught off guard a bit by how folks have mostly been interested in Wolverine as an alternative to MediatR with typical usage like this where users just delegate to Wolverine in memory within a Minimal API route:</p>
+
+
+<div class="wp-block-syntaxhighlighter-code "><pre class="brush: csharp; title: ; notranslate">
+app.MapPost(&quot;/items/create2&quot;, (CreateItemCommand cmd, IMessageBus bus) =&gt; bus.InvokeAsync&lt;ItemCreated&gt;(cmd));
+
+</pre></div>
+
+
+<p>With the corresponding message handler being this:</p>
+
+
+<div class="wp-block-syntaxhighlighter-code "><pre class="brush: csharp; title: ; notranslate">
+public class ItemHandler
+{
+    // This attribute applies Wolverine's EF Core transactional
+    // middleware
+    &#91;Transactional]
+    public static ItemCreated Handle(
+        // This would be the message
+        CreateItemCommand command,
+
+        // Any other arguments are assumed
+        // to be service dependencies
+        ItemsDbContext db)
+    {
+        // Create a new Item entity
+        var item = new Item
+        {
+            Name = command.Name
+        };
+
+        // Add the item to the current
+        // DbContext unit of work
+        db.Items.Add(item);
+
+        // This event being returned
+        // by the handler will be automatically sent
+        // out as a "cascading" message
+        return new ItemCreated
+        {
+            Id = item.Id
+        };
+    }
+}
+</pre></div>
+
+
+<p>Prior to the latest release, the <code>ItemCreated</code> event in the handler above when used from <code>IMessageBus.InvokeAsync&lt;ItemCreated&gt;()</code> was not published as a message because my original assumption was that in that case you were using the return value explicitly as a return value. Early users have been surprised that the <code>ItemCreated</code> was not published as a message, so I just changed the behavior to do so to make the cascading message behavior be more consistent and what folks seem to actually want.  </p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://jeremydmiller.com/2023/02/14/wolverines-new-http-endpoint-model/feed/</wfw:commentRss>
+			<slash:comments>2</slash:comments>
+		
+		
+		
+		<media:content url="https://2.gravatar.com/avatar/83a17261fd4c9f537e63165df6ba57bb?s=96&#38;d=identicon&#38;r=G" medium="image">
+			<media:title type="html">jeremydmiller</media:title>
+		</media:content>
+
+		<media:content url="https://jeremydmiller.files.wordpress.com/2022/12/wolverine_banner.png?w=1024" medium="image" />
+	</item>
+		<item>
+		<title>New Wolverine Release &#038; Future Plans</title>
+		<link>https://jeremydmiller.com/2023/02/01/new-wolverine-release-future-plans/</link>
+					<comments>https://jeremydmiller.com/2023/02/01/new-wolverine-release-future-plans/#respond</comments>
+		
+		<dc:creator><![CDATA[jeremydmiller]]></dc:creator>
+		<pubDate>Wed, 01 Feb 2023 16:21:00 +0000</pubDate>
+				<category><![CDATA[Uncategorized]]></category>
+		<category><![CDATA[.Net]]></category>
+		<category><![CDATA[Marten]]></category>
+		<category><![CDATA[Wolverine]]></category>
+		<guid isPermaLink="false">http://jeremydmiller.com/?p=10441</guid>
+
+					<description><![CDATA[After plenty of keystone cops shenanigans with CI automation today that made me question my own basic technical competency, there&#8217;s a new Wolverine 0.9.8 release on Nuget today with a variety of fixes and some new features. The documentation website was also re-published. First, some thanks: The highlights: Dogfooding baby! Conveniently enough, I&#8217;m part of &#8230; <a href="https://jeremydmiller.com/2023/02/01/new-wolverine-release-future-plans/" class="more-link">Continue reading <span class="screen-reader-text">New Wolverine Release &#38; Future&#160;Plans</span> <span class="meta-nav">&#8594;</span></a>]]></description>
+										<content:encoded><![CDATA[
+<p>After plenty of keystone cops shenanigans with CI automation today that made me question my own basic technical competency, there&#8217;s a new Wolverine 0.9.8 release on Nuget today with a variety of fixes and some new features. The <a href="https://wolverinefx.netlify.app">documentation website</a> was also re-published.</p>
+
+
+
+<p>First, some thanks:</p>
+
+
+
+<ul>
+<li><a href="https://github.com/wojteksuwala">Wojtek Suwala</a> made several fixes and improvements to the EF Core integration</li>
+
+
+
+<li><a href="https://github.com/Vertygo">Ivan Milosavljevic</a> helped fix several hanging tests on CI, built the MemoryPack integration, and improved the FluentValidation integration</li>
+
+
+
+<li><a href="https://twitter.com/alliterateant">Anthony</a> made his first OSS contribution (?) to help fix quite a few issues with the documentation</li>
+
+
+
+<li>My boss and colleague <a href="https://github.com/dgrozenok">Denys Grozenok</a> for all his support with reviewing docs and reporting issues </li>
+
+
+
+<li><a href="https://github.com/kebin">Kebin</a> for improving the dead letter queue mechanics</li>
+</ul>
+
+
+
+<p>The highlights:</p>
+
+
+
+<ul>
+<li><a href="https://wolverine.netlify.app/guide/handlers/middleware.html">Improved middleware usability and actual documentation on the same</a></li>
+
+
+
+<li>&#8220;<a href="https://wolverine.netlify.app/guide/handlers/#compound-handlers">Compound Handlers</a>&#8221; &#8212; more on this later. From our efforts converting a large system to Wolverine this is going to help with message handler testability</li>
+
+
+
+<li><a href="https://wolverine.netlify.app/guide/messages.html#memorypack-serialization">MemoryPack integration</a> for lightning fast serialization</li>
+
+
+
+<li>The `AutoApplyTransactions()` option (for <a href="https://wolverine.netlify.app/guide/durability/marten.html#transactional-middleware">Marten</a> or for <a href="https://wolverine.netlify.app/guide/durability/efcore.html#auto-apply-transactional-middleware">EF Core</a>). This also enables folks to mix and match EF Core &amp; Marten against the same Postgresql database within the same application</li>
+
+
+
+<li>I added .NET 6 support back in, but the CI is only testing against 7.0</li>
+</ul>
+
+
+
+<p></p>
+
+
+
+<h2 class="wp-block-heading">Dogfooding baby!</h2>
+
+
+
+<p>Conveniently enough, I&#8217;m part of a little officially sanctioned skunkworks team at work experimenting with converting a massive distributed monolithic application to the full Marten + Wolverine &#8220;critter stack.&#8221; I&#8217;m very encouraged by the effort so far, and it&#8217;s driven some recent features in Wolverine&#8217;s execution model to handle complexity in enterprise systems. More on that soon.</p>
+
+
+
+<p>It&#8217;s also pushing the story for interoperability with NServiceBus on the other end of Rabbit MQ queues. Strangely enough, no one is interested in trying to convert a humongous distributed system to Wolverine in one round of work. Go figure.</p>
+
+
+
+<h2 class="wp-block-heading">When will Wolverine hit 1.0?</h2>
+
+
+
+<p>There&#8217;s a little bit of awkwardness in that <a href="https://martendb.io">Marten</a> V6.0 (don&#8217;t worry, that&#8217;s a much smaller release than 4/5) needs to be released first and I haven&#8217;t been helping Oskar &amp; Babu with that recently, but I think we&#8217;ll be able to clear that soon.</p>
+
+
+
+<p>My &#8220;official&#8221; plan is to finish the documentation website by <strong>the end of February</strong> and make the 1.0 release by March 1st.  Right now, Wolverine is having its tires kicked by plenty of early users and there&#8217;s plenty of feedback (read: bugs or usability issues) coming in that I&#8217;m trying to address quickly. Feature wise, the only things I&#8217;m hoping to have done by 1.0 are:</p>
+
+
+
+<ul>
+<li>Using more native capabilities of Azure Service Bus, Rabbit MQ, and AWS SQS for dead letter queues and delayed messaging. That&#8217;s mostly to solidify some internal abstractions.</li>
+
+
+
+<li>It&#8217;s a stretch goal, but have Wolverine support Marten&#8217;s multi-tenancy through a database per tenant strategy. We&#8217;ll want that for internal MedeAnalytics usage, so it might end up being a priority</li>
+
+
+
+<li>Some better integration with ASP.Net Core Minimal API</li>
+</ul>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://jeremydmiller.com/2023/02/01/new-wolverine-release-future-plans/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+		
+		<media:content url="https://2.gravatar.com/avatar/83a17261fd4c9f537e63165df6ba57bb?s=96&#38;d=identicon&#38;r=G" medium="image">
+			<media:title type="html">jeremydmiller</media:title>
+		</media:content>
+	</item>
+	</channel>
+</rss>
