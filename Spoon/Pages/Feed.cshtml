@@ -1,0 +1,18 @@
+﻿@page
+@model Spoon.Pages.FeedModel
+<h1>@Model.feed.title</h1>
+<p>@Model.feed.desc</p>
+<ol>
+@foreach (var item in Model.feed.items) {
+   <li>
+      <h2>
+         <a href="@item.link">
+            @item.title
+         </a>
+      </h2>
+      <p>@item.pub.ToString("yyyy-MM-dd hh:mmtt").ToLower()</p>
+      @Html.Raw(item.desc)
+      <hr>
+   </li>
+}
+</ol>

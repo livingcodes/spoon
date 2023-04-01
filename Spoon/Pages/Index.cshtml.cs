@@ -10,7 +10,7 @@ public class IndexModel : PageModel
 
       foreach (var path in filePaths) {
          IFeedReader rdr = new FileFeedReader(filePath);
-         var feed = rdr.Read();
+         var feed = rdr.read();
          feeds.Add(feed);
       }
    }
